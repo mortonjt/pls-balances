@@ -40,11 +40,16 @@ def round_balance(spectrum, **init_kwds):
     rsol = solve(w[mid], w[r], m[mid], m[r], std[mid], std[r])
     lsol = lsol[np.argmin(np.abs(lsol))]
     rsol = rsol[np.argmin(np.abs(rsol))]
-    #lsol, rsol = m[l][0], m[r][0]
-    return lsol, rsol
+    if lsol<rsol:
+        return lsol, rsol
+    else:
+        return rsol, lsol
 
 def balance_classify(table, cats, num_folds, **init_kwds):
-    """ Builds a balance classifier. If categorical, it is assumed that the classes are binary."""
+    """
+    Builds a balance classifier. If categorical, it is assumed
+    that the classes are binary.
+    """
     skf = KFold(n_splits=num_folds, shuffle=True)
 
     ctable = pd.DataFrame(clr(centralize(table+1)),

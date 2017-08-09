@@ -11,7 +11,7 @@
 import re
 import ast
 import os
-
+from glob import glob
 from setuptools import find_packages, setup
 from setuptools.command.build_ext import build_ext as _build_ext
 
@@ -59,7 +59,7 @@ _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
 version='0.1'
 
-setup(name='gneiss',
+setup(name='pls-balances',
       version=version,
       license='BSD',
       description='',
@@ -69,6 +69,7 @@ setup(name='gneiss',
       maintainer="gneiss development team",
       maintainer_email="jamietmorton@gmail.com",
       packages=find_packages(),
+      scripts=glob('pls_balances/scripts/*.py'),
       setup_requires=['numpy >= 1.9.2'],
       ext_modules=extensions,
       cmdclass={'build_ext': build_ext},

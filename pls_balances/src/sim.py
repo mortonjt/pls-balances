@@ -29,13 +29,12 @@ def chain_interactions(gradient, mu, sigma):
        to the number of samples along the `gradient` and `m`
        corresponds to the number of species in `mus`.
     """
-
     xs = [norm.pdf(gradient, loc=mu[i], scale=sigma[i])
           for i in range(len(mu))]
     return np.vstack(xs).T
 
 
-def multinomial_sample(X, lam, rng=None):
+def multinomial_sample(X, depths, rng=None):
     """
     This draws multinomial samples from an urn using some poisson
     process denoted by lam.
@@ -46,9 +45,8 @@ def multinomial_sample(X, lam, rng=None):
        A matrix of counts where there are `n` rows and `m` columns
        where `n` corresponds to the number of samples and `m`
        corresponds to the number of species.
-    lam : float
-       Poisson parameter, which is also the mean and variance
-       of the Poisson.
+    depths : np.array
+       Sampling depths for each of the multinomial samples.
     rng: np.random.RandomState
        Numpy random state number generator.
 
@@ -62,9 +60,8 @@ def multinomial_sample(X, lam, rng=None):
     """
     if rng is None:
         rng = RandomState(0)
-    seq_depths = poisson.rvs(lam, size=X.shape[0], random_state=rng)
-    counts = [multinomial.rvs(seq_depths[i], X[i, :], random_state=rng)
-              for i in range(len(seq_depths))]
+    counts = [multinomial.rvs(depths[i], X[i, :], random_state=rng)
+              for i in range(len(depths))]
     return np.vstack(counts)
 
 
