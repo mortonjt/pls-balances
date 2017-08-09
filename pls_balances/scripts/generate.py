@@ -18,7 +18,8 @@ def deposit(table, groups, truth,
     with biom_open(output_table, 'w') as f:
         t.to_hdf5(f, generated_by='moi')
     groups.to_csv(output_groups, sep='\t')
-    truth.to_csv(output_truth)
+    with open(output_truth, 'w') as f:
+        f.write(','.join(truth))
 
 
 @click.group()
@@ -86,11 +87,10 @@ def noisify(table_file, metadata_file,
               help='output directory')
 def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, output_dir):
-
+    os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
         max_alpha, reps, intervals, n_species
     )
-    os.mkdir(output_dir)
     for i, g in enumerate(gen):
         table, groups, truth = g
         output_table = "%s/table.%d.biom" % (output_dir, i)

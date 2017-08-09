@@ -45,7 +45,7 @@ def generate_table(reps, n_species_class1, n_species_class2,
         metadata += [1]
 
     data = closure(np.vstack(data))
-    ground_truth = [1]*n_species_class1 + [0]*n_species_shared + [1]*n_species_class2
+
     metadata = pd.DataFrame({'group': metadata})
     metadata['n_diff'] = n_species_class1 + n_species_class2
     metadata['effect_size'] = effect_size
@@ -54,7 +54,10 @@ def generate_table(reps, n_species_class1, n_species_class2,
     table = pd.DataFrame(data)
     table.index = ['S%d' % i for i in range(len(table.index))]
     table.columns = ['F%d' % i for i in range(len(table.columns))]
-    return table, metadata, pd.Series(ground_truth)
+    ground_truth = (list(table.columns[:n_species_class1]) +
+                    list(table.columns[-n_species_class2:]))
+
+    return table, metadata, ground_truth
 
 
 def compositional_effect_size_generator(max_alpha, reps,
