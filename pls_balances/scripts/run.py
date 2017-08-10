@@ -7,6 +7,8 @@ from skbio.stats.composition import (clr, centralize,
                                      multiplicative_replacement)
 from sklearn.cross_decomposition import PLSRegression
 from pls_balances.src.balances import round_balance
+from statsmodels.sandbox.stats.multicomp import multipletests
+from scipy.stats import ttest_ind, mannwhitneyu
 
 
 @click.group()
@@ -72,6 +74,63 @@ def ancom_cmd(table_file, metadata_file, category, output_file):
     with open(output_file, 'w') as f:
         r = res["Reject null hypothesis"]
         f.write(','.join(res.loc[r].index.values))
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def t_test_cmd(table_file, metadata_file, category, output_file):
+    metadata = pd.read_table(metadata_file, index_col=0)
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
+                         index=table.ids(axis='sample'),
+                         columns=table.ids(axis='observation'))
+    cats = metadata[category]
+    cs = np.unique(cats)
+    def func(x):
+        return ttest_ind(*[x[cats == k] for k in cs])
+    m, p = np.apply_along_axis(func, axis=0,
+                               arr=table.values)
+
+    reject = multipletests(p)[0]
+    features = pd.Series(reject, index=table.columns)
+    diff_features = list(features.loc[features>0].index)
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
+
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def mann_whitney_cmd(table_file, metadata_file, category, output_file):
+    metadata = pd.read_table(metadata_file, index_col=0)
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
+                         index=table.ids(axis='sample'),
+                         columns=table.ids(axis='observation'))
+    cats = metadata[category]
+    cs = np.unique(cats)
+    def func(x):
+        return mannwhitneyu(*[x[cats == k] for k in cs])
+    m, p = np.apply_along_axis(func, axis=0,
+                               arr=table.values)
+
+    reject = multipletests(p)[0]
+    features = pd.Series(reject, index=table.columns)
+    diff_features = list(features.loc[features>0].index)
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
 
 
 if __name__ == "__main__":

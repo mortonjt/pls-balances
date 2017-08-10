@@ -1,0 +1,5 @@
+lambda: 0.1
+category: 'effect_size'
+output_dir: 'pls_balances/results/effect_size_benchmarks/'
+n_contaminants: 1000
+intervals: 3
