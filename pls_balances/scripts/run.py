@@ -122,7 +122,11 @@ def mann_whitney_cmd(table_file, metadata_file, category, output_file):
     cats = metadata[category]
     cs = np.unique(cats)
     def func(x):
-        return mannwhitneyu(*[x[cats == k] for k in cs])
+        try: # catches the scenario where all values are the same.
+            return mannwhitneyu(*[x[cats == k] for k in cs])
+        except:
+            return 0, 1
+
     m, p = np.apply_along_axis(func, axis=0,
                                arr=table.values)
 
