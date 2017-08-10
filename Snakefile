@@ -7,7 +7,7 @@ category = 'n_diff'
 output_dir = '{output_dir}'
 n_contaminants = 1000
 
-SAMPLES = np.arange(3).astype(np.str)
+SAMPLES = np.arange(10).astype(np.str)
 TOOLS = ['ancom', 'pls_balances']
 
 # question : how can I get rid of test_data?
