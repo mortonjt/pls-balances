@@ -117,8 +117,9 @@ def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
                                     output_dir):
 
-    gen = compositional_effect_size_generator(
-        max_alpha, reps, intervals, n_species
+    gen = compositional_variable_features_generator(
+        max_changing, fold_change, reps,
+        intervals, n_species
     )
     os.mkdir(output_dir)
     for i, g in enumerate(gen):

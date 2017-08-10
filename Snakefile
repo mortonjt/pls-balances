@@ -3,9 +3,9 @@ import tempfile
 import numpy as np
 
 lam = 0.1
-category = 'effect_size'
+category = 'n_diff'
 output_dir = '{output_dir}'
-n_contaminants = 30
+n_contaminants = 1000
 
 SAMPLES = np.arange(3).astype(np.str)
 TOOLS = ['ancom', 'pls_balances']
