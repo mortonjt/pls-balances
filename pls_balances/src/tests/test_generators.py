@@ -28,8 +28,9 @@ class TestCompositionalEffectSize(unittest.TestCase):
                 np.array([1, 1, 1, 1, 1]) / 5,
                 np.array([1, 1, 1, 1, 1]) / 5
             )),
-            index = list('0123456789'),
-            columns = list('01234'),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4']
         )
 
         pdt.assert_frame_equal(table, exp_table)
@@ -39,17 +40,15 @@ class TestCompositionalEffectSize(unittest.TestCase):
              'effect_size': [1.0] * 10,
              'library_size': [10000] * 10
             },
-            index = list('0123456789'),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
         )
         metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
         exp_metadata = exp_metadata.reindex_axis(sorted(exp_metadata.columns), axis=1)
         pdt.assert_frame_equal(metadata, exp_metadata)
 
-        exp_truth = pd.Series(
-            [1, 0, 0, 0, 1]
-        )
-
-        pdt.assert_series_equal(truth, exp_truth)
+        exp_truth = ['F0', 'F4']
+        self.assertListEqual(truth, exp_truth)
 
         # test to see if the groups are different
         table, metadata, truth = next(gen)
@@ -68,8 +67,9 @@ class TestCompositionalEffectSize(unittest.TestCase):
                     np.array([1, 1, 1, 1, 10]),
                     np.array([1, 1, 1, 1, 10])
                 ))),
-            index = list('0123456789'),
-            columns = list('01234'),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4']
         )
 
         pdt.assert_frame_equal(table, exp_table)
@@ -80,18 +80,16 @@ class TestCompositionalEffectSize(unittest.TestCase):
              'effect_size': [10.0] * 10,
              'library_size': [10000] * 10
             },
-            index = list('0123456789'),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
         )
         metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
         exp_metadata = exp_metadata.reindex_axis(sorted(exp_metadata.columns), axis=1)
 
         pdt.assert_frame_equal(metadata, exp_metadata)
 
-        exp_truth = pd.Series(
-            [1, 0, 0, 0, 1]
-        )
-
-        pdt.assert_series_equal(truth, exp_truth)
+        exp_truth = ['F0', 'F4']
+        self.assertListEqual(truth, exp_truth)
 
     def test_composition_variable_features(self):
         gen = compositional_variable_features_generator(
@@ -115,8 +113,9 @@ class TestCompositionalEffectSize(unittest.TestCase):
                     np.array([1, 1, 1, 2, 2])
                 ))
             ),
-            index = list('0123456789'),
-            columns = list('01234'),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4']
         )
         pdt.assert_frame_equal(table, exp_table)
 
@@ -126,7 +125,8 @@ class TestCompositionalEffectSize(unittest.TestCase):
              'effect_size': [2] * 10,
              'library_size': [10000] * 10
             },
-            index = list('0123456789'),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
         )
 
         metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
@@ -137,7 +137,8 @@ class TestCompositionalEffectSize(unittest.TestCase):
             [1, 1, 0, 1, 1]
         )
 
-        pdt.assert_series_equal(truth, exp_truth)
+        exp_truth = ['F0', 'F1', 'F3', 'F4']
+        self.assertListEqual(truth, exp_truth)
 
 
 if __name__ == "__main__":
