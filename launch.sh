@@ -1,11 +1,12 @@
 generate.py compositional_effect_size \
-    --max-alpha 1000 --reps 1000 --intervals 11 --n-species 1000 \
-    --output-dir pls_balances/results/effect_size_benchmarks
+    --max-alpha 100 --reps 50 --intervals 3 \
+    --n-species 100 --n-diff 5 \
+    --output-dir pls_balances/results/effect_size_benchmarks2
 
-generate.py compositional_variable_features \
-      --max-changing 500 --reps 1000 --intervals 11 --n-species 1000 \
-      --fold-change 2 \
-      --output-dir pls_balances/results/variable_features_benchmarks
+# generate.py compositional_variable_features \
+#     --max-changing 500 --reps 50 --intervals 3 --n-species 100 \
+#       --fold-change 2 \
+#       --output-dir pls_balances/results/variable_features_benchmarks
 
-snakemake --cores 8 --configfile effect_size.yaml
-snakemake --cores 8 --configfile variable_features.yaml
+snakemake --cores 2 --configfile effect_size.yaml
+# snakemake --cores 2 --configfile variable_features.yaml

@@ -83,13 +83,15 @@ def noisify(table_file, metadata_file,
               help='Number of effect size benchmarks to test.')
 @click.option('--n-species', default=100,
               help='Number of species')
+@click.option('--n-diff', default=50,
+              help='Number of differentially abundant species')
 @click.option('--output-dir',
               help='output directory')
 def compositional_effect_size(max_alpha, reps, intervals,
-                              n_species, output_dir):
+                              n_species, n_diff, output_dir):
     os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
-        max_alpha, reps, intervals, n_species
+        max_alpha, reps, intervals, n_species, n_diff
     )
     for i, g in enumerate(gen):
         table, groups, truth = g

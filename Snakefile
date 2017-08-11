@@ -8,8 +8,6 @@ import numpy as np
 # n_contaminants = 1000
 # intervals = 10
 
-configfile: 'config.yaml'
-
 lam = config['lambda']
 category = config['category']
 output_dir = config['output_dir']

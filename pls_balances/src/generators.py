@@ -61,7 +61,7 @@ def generate_table(reps, n_species_class1, n_species_class2,
 
 
 def compositional_effect_size_generator(max_alpha, reps,
-                                        intervals, n_species):
+                                        intervals, n_species, n_diff):
     """
     Parameters
     ----------
@@ -74,6 +74,8 @@ def compositional_effect_size_generator(max_alpha, reps,
         number of experiments to run.
     n_species : int
         Number of species.
+    n_diff : int
+        Number of differentially abundant species in each group.
 
     Returns
     -------
@@ -87,9 +89,9 @@ def compositional_effect_size_generator(max_alpha, reps,
     """
     for a in np.logspace(0, max_alpha, intervals):
         yield generate_table(reps,
-                             n_species_class1=1,
-                             n_species_class2=1,
-                             n_species_shared=n_species-2,
+                             n_species_class1=n_diff,
+                             n_species_class2=n_diff,
+                             n_species_shared=n_species-2*n_diff,
                              effect_size=a)
 
 
