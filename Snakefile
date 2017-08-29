@@ -25,7 +25,6 @@ SAMPLES = np.arange(intervals).astype(np.str)
 TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
 
 
-
 rule all:
     input:
         # expand("{output_dir}/ancom.{sample}.results", sample=SAMPLES)

@@ -4,6 +4,7 @@ This file generates feature tables for benchmarking
 import pandas as pd
 import numpy as np
 from skbio.stats.composition import closure
+from scipy.stats import norm, expon
 
 
 def generate_table(reps, n_species_class1, n_species_class2,
@@ -130,6 +131,111 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
                              n_species_class2=a_,
                              n_species_shared=n_species - 2*a_,
                              effect_size=fold_change)
+
+
+def generate_band_table(mu, sigma, gradient, n_species,
+                        lam, n_contaminants, library_size=10000):
+    """ Generates a band table with normal variables.
+
+    Parameters
+    ----------
+    mu : pd.Series
+        Vector of species optimal positions along gradient.
+    sigma : float
+        Variance of the species normal distribution.
+    gradient : array
+        Vector of gradient values.
+    n_species : int
+        Number of species to simulate.
+    n_contaminants : int
+       Number of contaminant species.
+    lam : float
+       Decay constant for contaminant urn (assumes that the contaminant urn
+       follows an exponential distribution).
+
+    Returns
+    -------
+    generator of
+        pd.DataFrame
+           Ground truth tables.
+        pd.Series
+           Metadata group categories, and sample information used
+           for benchmarking.
+        pd.Series
+           Species actually differentially abundant.
+    """
+    xs = [norm.pdf(gradient, loc=mu[i], scale=sigma)
+          for i in range(len(mu))]
+
+    table = closure(np.vstack(xs).T)
+    x = np.linspace(0, 1, n_contaminants)
+    contaminant_urn = closure(expon.pdf(x, scale=lam))
+    contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
+                                 table.shape[0], axis=0)
+    table = np.hstack((table, contaminant_urns))
+    table = closure(table)
+    x = np.linspace(0, 1, n_contaminants)
+    contaminant_urn = closure(expon.pdf(x, scale=lam))
+    contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
+                                 table.shape[0], axis=0)
+    table = np.hstack((table, contaminant_urns))
+    table = closure(table)
+
+    metadata = pd.DataFrame({'gradient': gradient})
+    metadata['n_diff'] = len(mu)
+    metadata['library_size'] = library_size
+    metadata.index = ['S%d' % i for i in range(len(metadata.index))]
+
+    table = pd.DataFrame(table)
+    table.index = ['S%d' % i for i in range(len(table.index))]
+    table.columns = ['F%d' % i for i in range(len(table.columns))]
+    ground_truth = list(table.columns)[:n_species]
+    return table, metadata, ground_truth
+
+
+def compositional_regression_prefilter_generator(
+        max_gradient, gradient_intervals, sigma,
+        n_species, lam, max_contaminants,
+        contaminant_intervals):
+    """ Generates tables with increasing regression effect sizes.
+
+    Parameters
+    ----------
+    max_gradient : float
+       Maximum value along the gradient (assumes that the gradient
+       starts at zero.
+    gradient_intervals : int
+       Number of sampling intervals along the gradient.
+    sigma : float
+       Variance for normal distribution used to choose coefficients.
+    n_species : int
+       Number of species to simulate in the ground truth.
+    lam : float
+       Decay constant for contaminant urn (assumes that the contaminant urn
+       follows an exponential distribution).
+    max_contaminants : int
+       Maximum number of contaminants.
+    contaminant_intervals : int
+       The number of intervals for benchmarking contaminants.
+
+    Returns
+    -------
+    generator of
+        pd.DataFrame
+           Ground truth tables.
+        pd.Series
+           Metadata group categories, and sample information used
+           for benchmarking.
+        pd.Series
+           Species actually differentially abundant.
+    """
+    gradient = np.linspace(0, max_gradient, gradient_intervals)
+    mu = np.linspace(0, max_gradient, n_species)
+    i = np.linspace(2, max_contaminants, contaminant_intervals)
+    for a in i:
+        yield generate_band_table(mu, sigma, gradient, n_species,
+                                  lam, n_contaminants=int(a),
+                                  library_size=10000)
 
 def library_size_difference_generator():
     pass

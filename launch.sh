@@ -1,6 +1,6 @@
 generate.py compositional_effect_size \
-    --max-alpha 100 --reps 50 --intervals 3 \
-    --n-species 100 --n-diff 5 \
+    --max-alpha 100 --reps 100 --intervals 10 \
+    --n-species 100 --n-diff 50 \
     --output-dir pls_balances/results/effect_size_benchmarks2
 
 # generate.py compositional_variable_features \
@@ -8,5 +8,5 @@ generate.py compositional_effect_size \
 #       --fold-change 2 \
 #       --output-dir pls_balances/results/variable_features_benchmarks
 
-snakemake --cores 2 --configfile effect_size.yaml
+snakemake --cores 8 --configfile effect_size.yaml
 # snakemake --cores 2 --configfile variable_features.yaml

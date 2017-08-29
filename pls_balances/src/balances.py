@@ -62,7 +62,8 @@ def balance_classify(table, cats, num_folds, **init_kwds):
         Y_train, Y_test = cats.iloc[train], cats.iloc[test]
         plsc = PLSRegression(n_components=1)
         plsc.fit(X=X_train, Y=Y_train)
-        pls_df = pd.DataFrame(plsc.x_weights_, index=ctable.columns, columns=['PLS1'])
+        pls_df = pd.DataFrame(plsc.x_weights_, index=ctable.columns,
+                              columns=['PLS1'])
 
         l, r = round_balance(pls_df, **init_kwds)
         denom = pls_df.loc[pls_df.PLS1 < l]
