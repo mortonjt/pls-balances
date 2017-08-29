@@ -25,14 +25,9 @@ SAMPLES = np.arange(intervals).astype(np.str)
 TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
 
 
-
 rule all:
     input:
-        # expand("{output_dir}/ancom.{sample}.results", sample=SAMPLES)
-        #"{output_dir}/ancom.summary"
-        # expand("{output_dir}/{tool}.summary", tool=TOOLS)
-        output_dir + "confusion_matrix.summary"
-
+        output_dir+"confusion_matrix.summary"
 
 rule inject_noise:
     input:
@@ -75,6 +70,7 @@ rule summarize:
         output_dir + "{tool}.summary"
     run:
         from pls_balances.src.evaluate import compute_confusion_matrices
+	print(input.results)
         compute_confusion_matrices(input.tables, input.results,
                                    input.truths, output[0])
 
