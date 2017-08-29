@@ -173,12 +173,8 @@ def generate_band_table(mu, sigma, gradient, n_species,
     contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
                                  table.shape[0], axis=0)
     table = np.hstack((table, contaminant_urns))
-    table = closure(table)
-    x = np.linspace(0, 1, n_contaminants)
-    contaminant_urn = closure(expon.pdf(x, scale=lam))
-    contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
-                                 table.shape[0], axis=0)
-    table = np.hstack((table, contaminant_urns))
+    s_ids = ['F%d' % i for i in range(n_species)]
+    c_ids = ['X%d' % i for i in range(n_contaminants)]
     table = closure(table)
 
     metadata = pd.DataFrame({'gradient': gradient})
@@ -188,7 +184,7 @@ def generate_band_table(mu, sigma, gradient, n_species,
 
     table = pd.DataFrame(table)
     table.index = ['S%d' % i for i in range(len(table.index))]
-    table.columns = ['F%d' % i for i in range(len(table.columns))]
+    table.columns = s_ids + c_ids
     ground_truth = list(table.columns)[:n_species]
     return table, metadata, ground_truth
 
