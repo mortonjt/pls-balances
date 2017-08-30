@@ -102,7 +102,7 @@ def t_test_cmd(table_file, metadata_file, category, output_file):
     diff_features = list(features.loc[features>0].index)
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
-
+ax
 
 @run.command()
 @click.option('--table-file',
