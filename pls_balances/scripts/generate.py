@@ -38,7 +38,7 @@ def generate():
 @click.option('--output-file',
               help='output file of modified biom table.')
 def noisify(table_file, metadata_file,
-            sigma, lam, n_contaminants, output_file):
+            sigma, output_file):
 
     metadata = pd.read_table(metadata_file, index_col=0)
     table = load_table(table_file)
@@ -73,13 +73,20 @@ def noisify(table_file, metadata_file,
               help='Number of species')
 @click.option('--n-diff', default=50,
               help='Number of differentially abundant species')
+@click.option('--n-contaminants', default=100,
+              help='Number of species')
+@click.option('--lam', default=0.1,
+              help='Scale factor for exponential contamination urn.')
 @click.option('--output-dir',
               help='output directory')
 def compositional_effect_size(max_alpha, reps, intervals,
-                              n_species, n_diff, output_dir):
+                              n_species, n_diff,
+                              n_contaminants, lam,
+                              output_dir):
     os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
-        max_alpha, reps, intervals, n_species, n_diff
+        max_alpha, reps, intervals, n_species, n_diff,
+        n_contaminants, lam
     )
     for i, g in enumerate(gen):
         table, groups, truth = g
@@ -101,15 +108,21 @@ def compositional_effect_size(max_alpha, reps, intervals,
               help='Number of effect size benchmarks to test.')
 @click.option('--n-species', default=100,
               help='Number of species')
+@click.option('--n-contaminants', default=100,
+              help='Number of species')
+@click.option('--lam', default=0.1,
+              help='Scale factor for exponential contamination urn.')
 @click.option('--output-dir',
               help='output directory')
 def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
+                                    n_contaminants, lam,
                                     output_dir):
 
     gen = compositional_variable_features_generator(
         max_changing, fold_change, reps,
-        intervals, n_species
+        intervals, n_species,
+        n_contaminants, lam
     )
     os.mkdir(output_dir)
     for i, g in enumerate(gen):

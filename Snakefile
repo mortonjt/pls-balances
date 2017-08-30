@@ -8,11 +8,11 @@ import numpy as np
 # n_contaminants = 1000
 # intervals = 10
 
-lam = config['lambda']
+
 category = config['category']
 output_dir = config['output_dir']
-n_contaminants = config['n_contaminants']
 intervals = config['intervals']
+sigma = config['sigma']
 
 # lam = 0.1
 # category = 'n_diff'
@@ -42,8 +42,6 @@ rule inject_noise:
     run:
         shell("""
         generate.py noisify \
-            --lam {lam} \
-            --n-contaminants {n_contaminants} \
             --table-file {input.table} \
             --metadata-file {input.metadata} \
             --output-file {output}

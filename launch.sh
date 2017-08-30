@@ -8,15 +8,22 @@
 #       --fold-change 2 \
 #       --output-dir pls_balances/results/variable_features_benchmarks
 
-generate.py compositional_regression_prefilter \
-    --max-gradient 10 \
-    --gradient-intervals 5 \
-    --sigma 2 \
-    --n-species 10 \
-    --lam 0.1  \
-    --max-contaminants 10 \
-    --contaminant-intervals 2 \
-    --output-dir pls_balances/results/variable_contaminants
+# generate.py compositional_regression_prefilter \
+#     --max-gradient 10 \
+#     --gradient-intervals 5 \
+#     --sigma 2 \
+#     --n-species 10 \
+#     --lam 0.1  \
+#     --max-contaminants 10 \
+#     --contaminant-intervals 2 \
+#     --output-dir pls_balances/results/variable_contaminants
+
+# generate.py compositional_effect_size \
+#     --max-alpha 10 --reps 10 --intervals 3 \
+#     --n-species 10 --n-diff 5 \
+#     --n-contaminants 3 --lam 0.1 \
+#     --output-dir pls_balances/results/effect_size_benchmarks_test
+snakemake --configfile test_effect_size.yaml
 
 # snakemake --cores 8 --configfile effect_size.yaml
 # snakemake --cores 2 --configfile variable_features.yaml

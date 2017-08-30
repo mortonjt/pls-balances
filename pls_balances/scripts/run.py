@@ -97,12 +97,11 @@ def t_test_cmd(table_file, metadata_file, category, output_file):
     m, p = np.apply_along_axis(func, axis=0,
                                arr=table.values)
 
-    reject = multipletests(p)[0]
+    reject = p < 0.05
     features = pd.Series(reject, index=table.columns)
     diff_features = list(features.loc[features>0].index)
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
-ax
 
 @run.command()
 @click.option('--table-file',
@@ -144,7 +143,7 @@ def mann_whitney_cmd(table_file, metadata_file, category, output_file):
     m, p = np.apply_along_axis(func, axis=0,
                                arr=table.values)
 
-    reject = multipletests(p)[0]
+    reject = p < 0.05
     features = pd.Series(reject, index=table.columns)
     diff_features = list(features.loc[features>0].index)
     with open(output_file, 'w') as f:
