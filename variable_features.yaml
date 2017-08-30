@@ -1,4 +1,10 @@
-category: 'n_diff'
+benchmark: 'n_diff'
+category: 'group'
 output_dir: 'pls_balances/results/variable_features_benchmarks_test/'
 intervals: 3
 sigma: 1
+tools:
+- ancom
+- pls_balances
+- t_test
+- mann_whitney

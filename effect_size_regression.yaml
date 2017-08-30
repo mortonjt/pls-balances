@@ -1,4 +1,4 @@
-category: 'group'
+category: 'gradient'
 benchmark: 'effect_size'
 output_dir: 'pls_balances/results/effect_size_regression_benchmarks_test/'
 intervals: 3
