@@ -4,9 +4,11 @@ import pandas as pd
 import pandas.util.testing as pdt
 import numpy.testing as npt
 from skbio.stats.composition import closure
-from pls_balances.src.generators import (compositional_effect_size_generator,
-                                         compositional_variable_features_generator,
-                                         compositional_regression_prefilter_generator)
+from pls_balances.src.generators import (
+    compositional_effect_size_generator,
+    compositional_variable_features_generator,
+    compositional_regression_prefilter_generator,
+    compositional_regression_effect_size_generator)
 
 
 class TestCompositionalEffectSize(unittest.TestCase):
@@ -244,6 +246,52 @@ class TestCompositionalRegression(unittest.TestCase):
 
         exp_truth = ['F0', 'F1', 'F2', 'F3', 'F4']
 
+        self.assertListEqual(truth, exp_truth)
+
+    def test_compositional_regression_effect_size_generator(self):
+        gen = compositional_regression_effect_size_generator(
+            max_gradient=5,
+            gradient_intervals=10,
+            sigma=1,
+            n_species=5,
+            n_contaminants=2,
+            lam=0.1,
+            max_beta=1,
+            beta_intervals=3
+        )
+        table, md, truth = next(gen)
+
+
+        exp_table = pd.DataFrame({'S0': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S1': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S2': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S3': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S4': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S5': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S6': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S7': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S8': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023],
+                                  'S9': [0.1, 0.1, 0.1,  0.1,  0.1,  0.499977,  0.000023]},
+                                 index=['F0', 'F1', 'F2', 'F3', 'F4', 'X0', 'X1']).T
+        npt.assert_allclose(table.values, exp_table.values, atol=1e-3)
+
+        exp_md = pd.DataFrame(
+            {'S0': [0.000000, 5, 10000],
+             'S1': [0.555556, 5, 10000],
+             'S2': [1.111111, 5, 10000],
+             'S3': [1.666667, 5, 10000],
+             'S4': [2.222222, 5, 10000],
+             'S5': [2.777778, 5, 10000],
+             'S6': [3.333333, 5, 10000],
+             'S7': [3.888889, 5, 10000],
+             'S8': [4.444444, 5, 10000],
+             'S9': [5.000000, 5, 10000]
+            }, index=['gradient', 'n_diff', 'library_size']
+        ).T
+        md = md.astype(np.float)
+        pdt.assert_frame_equal(md, exp_md)
+
+        exp_truth = ['F0', 'F1', 'F2', 'F3', 'F4']
         self.assertListEqual(truth, exp_truth)
 
 

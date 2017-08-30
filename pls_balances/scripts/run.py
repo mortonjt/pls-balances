@@ -113,6 +113,20 @@ def t_test_cmd(table_file, metadata_file, category, output_file):
               help='Category specifying groups')
 @click.option('--output-file',
               help='output file of differientially abundance features.')
+def lasso_cmd(table_file, metadata_file, category, output_file):
+    # fill this in ...
+    pass
+
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
 def mann_whitney_cmd(table_file, metadata_file, category, output_file):
     metadata = pd.read_table(metadata_file, index_col=0)
     table = load_table(table_file)

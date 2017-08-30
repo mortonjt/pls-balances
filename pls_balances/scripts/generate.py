@@ -6,10 +6,9 @@ from scipy.stats import expon
 from skbio.stats.composition import perturb, closure
 from pls_balances.src.generators import (compositional_effect_size_generator,
                                          compositional_variable_features_generator,
-                                         compositional_regression_prefilter_generator)
-
+                                         compositional_regression_prefilter_generator,
+                                         compositional_regression_effect_size_generator)
 from pls_balances.src.sim import multinomial_sample, compositional_noise
-
 from biom import Table, load_table
 from biom.util import biom_open
 
@@ -153,19 +152,67 @@ def compositional_variable_features(max_changing, fold_change, reps,
 @click.option('--output-dir',
               help='output directory')
 def compositional_regression_prefilter(max_gradient,
-                                        gradient_intervals,
-                                        sigma,
-                                        n_species,
-                                        lam,
-                                        max_contaminants,
-                                        contaminant_intervals,
-                                        output_dir):
+                                       gradient_intervals,
+                                       sigma,
+                                       n_species,
+                                       lam,
+                                       max_contaminants,
+                                       contaminant_intervals,
+                                       output_dir):
 
     gen = compositional_regression_prefilter_generator(
         max_gradient, gradient_intervals, sigma,
         n_species, lam, max_contaminants,
         contaminant_intervals
     )
+    os.mkdir(output_dir)
+    for i, g in enumerate(gen):
+        table, groups, truth = g
+        output_table = "%s/table.%d.biom" % (output_dir, i)
+        output_groups = "%s/metadata.%d.txt" % (output_dir, i)
+        output_truth = "%s/truth.%d.csv" % (output_dir, i)
+        deposit(table, groups, truth,
+                output_table, output_groups, output_truth)
+
+
+@generate.command()
+@click.option('--max-gradient', default=2,
+              help='Maximum value of the gradient (gradient starts at zero).')
+@click.option('--gradient-intervals', default=2,
+              help='Number of intervals within the gradient.')
+@click.option('--sigma', default=3,
+              help='Variance of species normal distribution along gradient.')
+@click.option('--n-species', default=100,
+              help='Number of species')
+@click.option('--n-contaminants', default=100,
+              help='Number of species')
+@click.option('--lam', default=0.1,
+              help='Scale factor for exponential contamination urn.')
+@click.option('--max-beta', default=100,
+              help='Maximum number of contaminants in urn.')
+@click.option('--beta-intervals', default=100,
+              help='Number intervals for varying number of contaminant species.')
+@click.option('--output-dir',
+              help='output directory')
+def compositional_regression_effect_size(max_gradient,
+                                         gradient_intervals,
+                                         sigma,
+                                         n_species,
+                                         n_contaminants,
+                                         lam,
+                                         max_beta,
+                                         beta_intervals,
+                                         output_dir):
+
+    gen = compositional_regression_effect_size_generator(max_gradient,
+                                                         gradient_intervals,
+                                                         sigma,
+                                                         n_species,
+                                                         n_contaminants,
+                                                         lam,
+                                                         max_beta,
+                                                         beta_intervals)
+
     os.mkdir(output_dir)
     for i, g in enumerate(gen):
         table, groups, truth = g

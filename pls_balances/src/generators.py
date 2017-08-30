@@ -181,7 +181,6 @@ def generate_band_table(mu, sigma, gradient, n_species,
     metadata['n_diff'] = len(mu)
     metadata['library_size'] = library_size
     metadata.index = ['S%d' % i for i in range(len(metadata.index))]
-
     table = pd.DataFrame(table)
     table.index = ['S%d' % i for i in range(len(table.index))]
     table.columns = s_ids + c_ids
@@ -231,6 +230,65 @@ def compositional_regression_prefilter_generator(
     for a in i:
         yield generate_band_table(mu, sigma, gradient, n_species,
                                   lam, n_contaminants=int(a),
+                                  library_size=10000)
+
+def compositional_regression_effect_size_generator(
+        max_gradient,
+        gradient_intervals,
+        sigma,
+        n_species,
+        n_contaminants,
+        lam,
+        max_beta,
+        beta_intervals):
+    """ Generates tables with increasing regression effect sizes.
+
+    Parameters
+    ----------
+    max_gradient : float
+       Maximum value along the gradient (assumes that the gradient
+       starts at zero.
+    gradient_intervals : int
+       Number of sampling intervals along the gradient.
+    sigma : float
+       Variance for normal distribution used to choose coefficients.
+    n_species : int
+       Number of species to simulate in the ground truth.
+    n_contaminants : int
+       Number of contaminant species.
+    lam : float
+       Decay constant for contaminant urn (assumes that the contaminant urn
+       follows an exponential distribution).
+    max_beta : int
+       Maximum value for beta, the proxy for effect size.  In other words,
+       this dicates the means for the normal distributions for each of the species.
+       Specifically, this has the following form
+       ```
+       y_i = beta  x g_i
+       ```
+       where y_i is the mean for species i, g_i is the gradient value, and
+       beta is the effect size. This should be between [0, 1]
+    beta_intervals : int
+       The number of intervals for benchmarking beta.
+
+    Returns
+    -------
+    generator of
+        pd.DataFrame
+           Ground truth tables.
+        pd.Series
+           Metadata group categories, and sample information used
+           for benchmarking.
+        pd.Series
+           Species actually differentially abundant.
+    """
+    gradient = np.linspace(0, max_gradient, gradient_intervals)
+    betas = np.linspace(0, max_beta, beta_intervals)
+    g = np.linspace(0, max_gradient, n_species)
+    for b in betas:
+        mu = g * b
+        yield generate_band_table(mu, sigma, gradient, n_species,
+                                  lam, n_contaminants=n_contaminants,
                                   library_size=10000)
 
 def library_size_difference_generator():
