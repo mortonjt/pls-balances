@@ -1,6 +1,6 @@
 category: 'gradient'
 benchmark: 'n_contaminants'
-output_dir: 'pls_balances/results/variable_contaminants_benchmarks/'
+output_dir: 'pls_balances/results/variable_contaminants_benchmarks_test/'
 intervals: 3
 sigma: 1
 tools:
