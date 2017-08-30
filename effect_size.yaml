@@ -7,8 +7,8 @@ intervals: 20
 =======
 category: 'group'
 benchmark: 'effect_size'
-output_dir: 'pls_balances/results/effect_size_benchmarks2/'
-intervals: 10
+output_dir: 'pls_balances/results/effect_size_benchmarks_test/'
+intervals: 3
 sigma: 1
 tools:
 - ancom

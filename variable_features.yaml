@@ -1,9 +1,13 @@
 category: 'n_diff'
+<<<<<<< HEAD
 output_dir: 'pls_balances/results/variable_features_benchmarks/'
 <<<<<<< HEAD
 n_contaminants: 1000
 intervals: 20
 =======
+=======
+output_dir: 'pls_balances/results/variable_features_benchmarks_test/'
+>>>>>>> 73514b19e2c6d7196741e8ab4b00ed137ea067eb
 intervals: 3
 sigma: 1
 >>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28

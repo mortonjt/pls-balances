@@ -1,24 +1,13 @@
 # generate.py compositional_effect_size \
-<<<<<<< HEAD
-#     --max-alpha 4 --reps 200 --intervals 20 \
-#     --n-species 10 --n-diff 50 \
-#     --output-dir /home/mortonjt/Documents/pls-balances/pls_balances/results/effect_size_benchmarks_test
-# 
-=======
 #     --max-alpha 100 --reps 100 --intervals 10 \
 #     --n-species 100 --n-diff 50 \
 #     --output-dir pls_balances/results/effect_size_benchmarks2
 
->>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28
 # generate.py compositional_variable_features \
-#     --max-changing 5 --reps 200 --intervals 21 --n-species 10 \
-#     --fold-change 2 \
-#     --output-dir pls_balances/results/variable_features_benchmarks_test
+#     --max-changing 500 --reps 50 --intervals 3 --n-species 100 \
+#       --fold-change 2 \
+#       --output-dir pls_balances/results/variable_features_benchmarks
 
-<<<<<<< HEAD
-snakemake --cores 8 --configfile effect_size.yaml
-snakemake --cores 8 --configfile variable_features.yaml
-=======
 generate.py compositional_regression_prefilter \
     --max-gradient 10 \
     --gradient-intervals 5 \
@@ -50,13 +39,7 @@ generate.py compositional_variable_features \
     --fold-change 2 \
     --output-dir pls_balances/results/variable_features_benchmarks_test
 
-<<<<<<< HEAD
-# snakemake --cores 8 --configfile effect_size.yaml
-# snakemake --cores 2 --configfile variable_features.yaml
->>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28
-=======
 snakemake --cores 8 --configfile variable_contaminants.yaml
 snakemake --cores 8 --configfile effect_size.yaml
 snakemake --cores 8 --configfile effect_size_regression.yaml
 snakemake --cores 8 --configfile variable_features.yaml
->>>>>>> 73514b19e2c6d7196741e8ab4b00ed137ea067eb
