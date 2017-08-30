@@ -1,0 +1,9 @@
+category: 'gradient'
+benchmark: 'n_contaminants'
+output_dir: 'pls_balances/results/variable_contaminants_benchmarks/'
+intervals: 3
+sigma: 1
+tools:
+- pls_balances
+- pearson
+- spearman

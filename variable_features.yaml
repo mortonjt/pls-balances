@@ -1,5 +1,9 @@
-lambda: 0.1
 category: 'n_diff'
 output_dir: 'pls_balances/results/variable_features_benchmarks/'
+<<<<<<< HEAD
 n_contaminants: 1000
 intervals: 20
+=======
+intervals: 3
+sigma: 1
+>>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28

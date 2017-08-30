@@ -8,7 +8,7 @@ from skbio.stats.composition import (clr, centralize,
 from sklearn.cross_decomposition import PLSRegression
 from pls_balances.src.balances import round_balance
 from statsmodels.sandbox.stats.multicomp import multipletests
-from scipy.stats import ttest_ind, mannwhitneyu
+from scipy.stats import ttest_ind, mannwhitneyu, pearsonr, spearmanr
 
 
 @click.group()
@@ -35,8 +35,12 @@ def pls_balances_cmd(table_file, metadata_file, category, output_file):
                       index=table.index, columns=table.columns)
 
     rfc = PLSRegression(n_components=1)
-    cats = np.unique(metadata[category])
-    groups = (metadata[category] == cats[0]).astype(np.int)
+    if metadata[category].dtype != np.float:
+        cats = np.unique(metadata[category])
+        groups = (metadata[category] == cats[0]).astype(np.int)
+    else:
+        groups = metadata[category]
+
     rfc.fit(X=ctable.values, Y=groups)
 
     pls_df = pd.DataFrame(rfc.x_weights_,
@@ -103,7 +107,6 @@ def t_test_cmd(table_file, metadata_file, category, output_file):
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
 
-
 @run.command()
 @click.option('--table-file',
               help='Input biom table of abundances')
@@ -133,6 +136,70 @@ def mann_whitney_cmd(table_file, metadata_file, category, output_file):
     reject = p < 0.05
     features = pd.Series(reject, index=table.columns)
     diff_features = list(features.loc[features>0].index)
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def lasso_cmd(table_file, metadata_file, category, output_file):
+    # fill this in ...
+    pass
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def pearson_cmd(table_file, metadata_file, category, output_file):
+    metadata = pd.read_table(metadata_file, index_col=0)
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
+                         index=table.ids(axis='sample'),
+                         columns=table.ids(axis='observation'))
+    gradient = metadata[category].astype(np.float)
+
+    r, p = np.apply_along_axis(lambda x: pearsonr(x, gradient),
+                               axis=0, arr=table.values)
+    reject = np.logical_and(p < 0.05, r**2 > 0.5)
+    features = pd.Series(reject, index=table.columns)
+    diff_features = list(features.loc[features>0].index)
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def spearman_cmd(table_file, metadata_file, category, output_file):
+    metadata = pd.read_table(metadata_file, index_col=0)
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
+                         index=table.ids(axis='sample'),
+                         columns=table.ids(axis='observation'))
+    gradient = metadata[category].astype(np.float)
+
+    r, p = np.apply_along_axis(lambda x: spearmanr(x, gradient),
+                               axis=0, arr=table.values)
+
+    reject = np.logical_and(p < 0.05, r**2 > 0.5)
+    features = pd.Series(reject, index=table.columns)
+    diff_features = list(features.loc[features > 0].index)
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
 
