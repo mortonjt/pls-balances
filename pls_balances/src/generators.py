@@ -216,6 +216,7 @@ def generate_band_table(mu, sigma, gradient, n_species,
 
     metadata = pd.DataFrame({'gradient': gradient})
     metadata['n_diff'] = len(mu)
+    metadata['n_contaminants'] = n_contaminants
     metadata['library_size'] = library_size
     metadata.index = ['S%d' % i for i in range(len(metadata.index))]
     table = pd.DataFrame(table)

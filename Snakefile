@@ -10,6 +10,7 @@ import numpy as np
 
 
 category = config['category']
+benchmark = config['benchmark']
 output_dir = config['output_dir']
 intervals = config['intervals']
 sigma = config['sigma']
@@ -22,7 +23,9 @@ sigma = config['sigma']
 
 
 SAMPLES = np.arange(intervals).astype(np.str)
-TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
+TOOLS = config['tools']
+#TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
+
 
 
 rule all:
@@ -58,7 +61,7 @@ rule run_tool:
         run.py {wildcards.tool}_cmd \
             --table-file {input.table} \
             --metadata-file {input.metadata} \
-            --category group \
+            --category {category} \
             --output-file {output}
         """)
 
@@ -85,6 +88,6 @@ rule aggregate_summaries:
     run:
         from pls_balances.src.evaluate import aggregate_summaries
         aggregate_summaries(input.summaries, input.tables, input.metadata,
-                            category, output[0])
+                            benchmark, output[0])
 
 
