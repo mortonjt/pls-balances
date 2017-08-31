@@ -1,5 +1,10 @@
-lambda: 0.1
-category: 'effect_size'
-output_dir: 'pls_balances/results/effect_size_benchmarks2/'
-n_contaminants: 1000
-intervals: 10
+category: 'group'
+benchmark: 'effect_size'
+output_dir: 'pls_balances/results/effect_size_benchmarks_test/'
+intervals: 3
+sigma: 1
+tools:
+- ancom
+- pls_balances
+- t_test
+- mann_whitney

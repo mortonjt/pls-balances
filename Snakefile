@@ -8,11 +8,12 @@ import numpy as np
 # n_contaminants = 1000
 # intervals = 10
 
-lam = config['lambda']
+
 category = config['category']
+benchmark = config['benchmark']
 output_dir = config['output_dir']
-n_contaminants = config['n_contaminants']
 intervals = config['intervals']
+sigma = config['sigma']
 
 # lam = 0.1
 # category = 'n_diff'
@@ -22,7 +23,8 @@ intervals = config['intervals']
 
 
 SAMPLES = np.arange(intervals).astype(np.str)
-TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
+TOOLS = config['tools']
+#TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
 
 
 
@@ -43,8 +45,6 @@ rule inject_noise:
     run:
         shell("""
         generate.py noisify \
-            --lam {lam} \
-            --n-contaminants {n_contaminants} \
             --table-file {input.table} \
             --metadata-file {input.metadata} \
             --output-file {output}
@@ -61,7 +61,7 @@ rule run_tool:
         run.py {wildcards.tool}_cmd \
             --table-file {input.table} \
             --metadata-file {input.metadata} \
-            --category group \
+            --category {category} \
             --output-file {output}
         """)
 
@@ -88,6 +88,6 @@ rule aggregate_summaries:
     run:
         from pls_balances.src.evaluate import aggregate_summaries
         aggregate_summaries(input.summaries, input.tables, input.metadata,
-                            category, output[0])
+                            benchmark, output[0])
 
 

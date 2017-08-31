@@ -1,5 +1,10 @@
-lambda: 0.1
-category: 'n_diff'
-output_dir: 'pls_balances/results/variable_features_benchmarks/'
-n_contaminants: 100
+benchmark: 'n_diff'
+category: 'group'
+output_dir: 'pls_balances/results/variable_features_benchmarks_test/'
 intervals: 3
+sigma: 1
+tools:
+- ancom
+- pls_balances
+- t_test
+- mann_whitney
