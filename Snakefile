@@ -70,7 +70,6 @@ rule summarize:
         output_dir + "{tool}.summary"
     run:
         from pls_balances.src.evaluate import compute_confusion_matrices
-	print(input.results)
         compute_confusion_matrices(input.tables, input.results,
                                    input.truths, output[0])
 

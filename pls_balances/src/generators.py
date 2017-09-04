@@ -84,7 +84,8 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
 
 def compositional_effect_size_generator(max_alpha, reps,
                                         intervals, n_species, n_diff,
-                                        n_contaminants=2, lam=0.1):
+                                        n_contaminants=2, lam=0.1, 
+                                        library_size=10000):
     """ Generates tables where the effect size changes.
 
     Parameters
@@ -122,7 +123,8 @@ def compositional_effect_size_generator(max_alpha, reps,
                                    n_species_class2=n_diff,
                                    n_species_shared=n_species-2*n_diff,
                                    effect_size=a,
-                                   n_contaminants=n_contaminants, lam=lam)
+                                   n_contaminants=n_contaminants, lam=lam,
+                                   library_size=library_size)
 
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,

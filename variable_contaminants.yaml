@@ -1,9 +1,12 @@
 category: 'gradient'
 benchmark: 'n_contaminants'
-output_dir: 'pls_balances/results/variable_contaminants_benchmarks_test/'
-intervals: 3
+output_dir: 'pls_balances/results/variable_contaminants_benchmarks_round4/'
+# output_dir: 'pls_balances/results/variable_contaminants_benchmarks_test/'
+intervals: 20
 sigma: 1
 tools:
 - pls_balances
 - pearson
 - spearman
+- lasso
+- random_forest

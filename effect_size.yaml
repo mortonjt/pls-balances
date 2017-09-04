@@ -1,18 +1,11 @@
-<<<<<<< HEAD
-lambda: 0.1
-category: 'effect_size'
-output_dir: '/home/mortonjt/Documents/pls-balances/pls_balances/results/effect_size_benchmarks/'
-n_contaminants: 1000
-intervals: 20
-=======
 category: 'group'
 benchmark: 'effect_size'
-output_dir: 'pls_balances/results/effect_size_benchmarks_test/'
-intervals: 3
+output_dir: 'pls_balances/results/effect_size_benchmarks_round4/'
+# output_dir: 'pls_balances/results/effect_size_benchmarks_test/'
+intervals: 20
 sigma: 1
 tools:
 - ancom
 - pls_balances
 - t_test
 - mann_whitney
->>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28

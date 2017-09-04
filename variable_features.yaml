@@ -1,26 +1,11 @@
-<<<<<<< HEAD
-category: 'n_diff'
-<<<<<<< HEAD
-output_dir: 'pls_balances/results/variable_features_benchmarks/'
-<<<<<<< HEAD
-n_contaminants: 1000
-intervals: 20
-=======
-=======
-=======
 benchmark: 'n_diff'
 category: 'group'
->>>>>>> e00fcc64b4046f4a9b117ea4cff33e90ce001867
-output_dir: 'pls_balances/results/variable_features_benchmarks_test/'
->>>>>>> 73514b19e2c6d7196741e8ab4b00ed137ea067eb
-intervals: 3
+output_dir: 'pls_balances/results/variable_features_benchmarks_round4/'
+# output_dir: 'pls_balances/results/variable_features_benchmarks_test/'
+intervals: 20
 sigma: 1
-<<<<<<< HEAD
->>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28
-=======
 tools:
 - ancom
 - pls_balances
 - t_test
 - mann_whitney
->>>>>>> e00fcc64b4046f4a9b117ea4cff33e90ce001867

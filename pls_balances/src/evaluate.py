@@ -25,13 +25,8 @@ def compute_confusion_matrices(table_files, result_files,
     """
     # only use the result files that match with the output_file
     out_suf = splitext(basename(output_file))[0]
-<<<<<<< HEAD
-=======
-    result_files = list(filter(lambda x: out_suf in basename(x), result_files))
->>>>>>> 3584487daa76dbf5318d193a89cec78c864a9f28
 
     result_files = list(filter(lambda x: out_suf in basename(x), result_files))
-    print(result_files)
     index_names = list(map(lambda x: splitext(basename(x))[0], table_files))
     col_names = ['%s_TP' % out_suf,
                  '%s_FP' % out_suf,
