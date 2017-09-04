@@ -7,3 +7,5 @@ tools:
 - pls_balances
 - pearson
 - spearman
+- random_forest
+- lasso
