@@ -9,6 +9,8 @@ from sklearn.cross_decomposition import PLSRegression
 from pls_balances.src.balances import round_balance
 from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy.stats import ttest_ind, mannwhitneyu, pearsonr, spearmanr
+from sklearn import linear_model
+from sklearn.ensemble import RandomForestRegressor
 
 
 @click.group()
@@ -139,18 +141,6 @@ def mann_whitney_cmd(table_file, metadata_file, category, output_file):
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
 
-@run.command()
-@click.option('--table-file',
-              help='Input biom table of abundances')
-@click.option('--metadata-file',
-              help='Input metadata file')
-@click.option('--category',
-              help='Category specifying groups')
-@click.option('--output-file',
-              help='output file of differientially abundance features.')
-def lasso_cmd(table_file, metadata_file, category, output_file):
-    # fill this in ...
-    pass
 
 @run.command()
 @click.option('--table-file',
@@ -200,6 +190,52 @@ def spearman_cmd(table_file, metadata_file, category, output_file):
     reject = np.logical_and(p < 0.05, r**2 > 0.5)
     features = pd.Series(reject, index=table.columns)
     diff_features = list(features.loc[features > 0].index)
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
+
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def lasso_cmd(table_file, metadata_file, category, output_file):
+    metadata = pd.read_table(metadata_file, index_col=0)
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
+                         index=table.ids(axis='sample'),
+                         columns=table.ids(axis='observation'))
+    cl = linear_model.LassoCV()
+    
+    cl.fit(X=table, y=metadata[category])
+    idx = np.abs(cl.coef_) > 0
+    diff_features = table.columns[idx]
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def random_forest_cmd(table_file, metadata_file, category, output_file):
+    metadata = pd.read_table(metadata_file, index_col=0)
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
+                         index=table.ids(axis='sample'),
+                         columns=table.ids(axis='observation'))
+    rf=RandomForestRegressor()
+    rf.fit(X=table, y=metadata[category])
+    idx = np.abs(rf.feature_importances_) > 0
+    diff_features = table.columns[idx]
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
 
