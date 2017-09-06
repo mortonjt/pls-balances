@@ -163,25 +163,6 @@ class TestCompositionalEffectSize(unittest.TestCase):
 
         table, metadata, truth = next(gen)
         table, metadata, truth = next(gen)
-        exp_table = pd.DataFrame(
-            closure(
-                np.vstack((
-                    np.array([2, 2, 1, 1, 1]),
-                    np.array([2, 2, 1, 1, 1]),
-                    np.array([2, 2, 1, 1, 1]),
-                    np.array([2, 2, 1, 1, 1]),
-                    np.array([2, 2, 1, 1, 1]),
-                    np.array([1, 1, 1, 2, 2]),
-                    np.array([1, 1, 1, 2, 2]),
-                    np.array([1, 1, 1, 2, 2]),
-                    np.array([1, 1, 1, 2, 2]),
-                    np.array([1, 1, 1, 2, 2])
-                ))
-            ),
-            index = ['S0', 'S1', 'S2', 'S3', 'S4',
-                     'S5', 'S6', 'S7', 'S8', 'S9'],
-            columns = ['F0', 'F1', 'F2', 'F3', 'F4']
-        )
 
         exp_table = pd.DataFrame(
             closure(
