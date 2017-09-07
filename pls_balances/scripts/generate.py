@@ -108,7 +108,7 @@ def compositional_effect_size(max_alpha, reps, intervals,
               help='Number of effect size benchmarks to test.')
 @click.option('--n-species', default=100,
               help='Number of species')
-@click.option('--asymmetry', default=False,
+@click.option('--asymmetry', is_flag=True, default=False,
               help='Fold-change applied to max-changing species in both sample groups = False')
 @click.option('--n-contaminants', default=100,
               help='Number of species')
