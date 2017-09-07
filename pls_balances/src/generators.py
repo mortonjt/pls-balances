@@ -185,52 +185,6 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
                                      n_contaminants=n_contaminants, lam=lam)
 
 
-
-# def compositional_asymmetric_variable_features_generator(max_changing, fold_change, reps,
-#                                               intervals, n_species,
-#                                               n_contaminants=2, lam=0.1):
-#     """ Generates tables where the number of changing features changes.
-
-#     Parameters
-#     ----------
-#     max_changing : float
-#         Maximum number of changing species, in only one group.
-#     fold_change : float
-#         The fold change of the altered features.
-#     reps : int
-#         Number of replicate samples per test.
-#     intervals : int
-#         Number of effect size intervals.  This corresponds to the
-#         number of experiments to run.
-#     n_species : int
-#         Number of species.
-#     n_contaminants : int
-#        Number of contaminant species.
-#     lam : float
-#        Decay constant for contaminant urn (assumes that the contaminant urn
-#        follows an exponential distribution).
-
-#     Returns
-#     -------
-#     generator of
-#         pd.DataFrame
-#            Ground truth tables.
-#         pd.Series
-#            Metadata group categories, and sample information used
-#            for benchmarking.
-#         pd.Series
-#            Species actually differentially abundant.
-#     """
-#     for a in np.linspace(0, max_changing, intervals):
-#         a_ = int(a)
-#         yield generate_block_table(reps,
-#                                    n_species_class1=a_,
-#                                    n_species_class2=0,
-#                                    n_species_shared=n_species - a_,
-#                                    effect_size=fold_change,
-#                                    n_contaminants=n_contaminants, lam=lam)
-
-
 def generate_band_table(mu, sigma, gradient, n_species,
                         lam, n_contaminants, library_size=10000):
     """ Generates a band table with normal variables.
