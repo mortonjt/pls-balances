@@ -82,10 +82,88 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
     return table, metadata, ground_truth
 
 
+def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
+                                  n_species_shared, effect_size,
+                                  lam, n_contaminants,
+                                  library_size=10000):
+    """ Generates a data set where there is a neutral group of samples, and then there
+    is some ecological succession where one group of species dies, and another group of
+    species grows.
+
+    Parameters
+    ----------
+    reps : int
+        Number of replicate samples per test.
+    n_species_class1 : int
+        Number of species changing in class1.
+    n_species_class2 : int
+        Number of species changing in class2.
+    n_species_shared: int
+        Number of species shared between classes.
+    effect_size : int
+        The effect size difference between the feature abundances.
+    n_contaminants : int
+       Number of contaminant species.
+    lam : float
+       Decay constant for contaminant urn (assumes that the contaminant urn
+       follows an exponential distribution).
+    library_size : np.array
+        A vector specifying the library sizes per sample.
+
+    Returns
+    -------
+    generator of
+        pd.DataFrame
+           Ground truth tables.
+        pd.DataFrame
+           Metadata group categories, n_diff and effect_size
+        pd.Series
+           Species actually differentially abundant.
+    """
+    data = []
+    metadata = []
+    for _ in range(reps):
+        data.append([1]*(n_species_class1+n_species_class2+n_species_shared))
+        metadata += [0]
+
+    for _ in range(reps):
+        data.append(
+            [1/effect_size]*n_species_class1 +
+            [1]*(n_species_shared) +
+            [effect_size]*n_species_class2)
+        metadata += [1]
+
+    data = closure(np.vstack(data))
+    x = np.linspace(0, 1, n_contaminants)
+    n_species = n_species_class1 + n_species_class2 + n_species_shared
+    contaminant_urn = closure(expon.pdf(x, scale=lam))
+    contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
+                                 data.shape[0], axis=0)
+
+    data = np.hstack((data, contaminant_urns))
+    s_ids = ['F%d' % i for i in range(n_species)]
+    c_ids = ['X%d' % i for i in range(n_contaminants)]
+    data = closure(data)
+
+    metadata = pd.DataFrame({'group': metadata})
+    metadata['n_diff'] = n_species_class1 + n_species_class2
+    metadata['effect_size'] = effect_size
+    metadata['library_size'] = library_size
+    metadata.index = ['S%d' % i for i in range(len(metadata.index))]
+    table = pd.DataFrame(data)
+
+    table.index = ['S%d' % i for i in range(len(table.index))]
+    table.columns = s_ids + c_ids
+    ground_truth = (list(s_ids[:n_species_class1]) +
+                    list(s_ids[-n_species_class2:]))
+
+    return table, metadata, ground_truth
+
+
 def compositional_effect_size_generator(max_alpha, reps,
                                         intervals, n_species, n_diff,
                                         n_contaminants=2, lam=0.1, 
-                                        library_size=10000):
+                                        library_size=10000, balanced=True):
     """ Generates tables where the effect size changes.
 
     Parameters
@@ -118,14 +196,22 @@ def compositional_effect_size_generator(max_alpha, reps,
            Species actually differentially abundant.
     """
     for a in np.logspace(0, max_alpha, intervals):
-        yield generate_block_table(reps,
-                                   n_species_class1=n_diff,
-                                   n_species_class2=n_diff,
-                                   n_species_shared=n_species-2*n_diff,
-                                   effect_size=a,
-                                   n_contaminants=n_contaminants, lam=lam,
-                                   library_size=library_size)
 
+        if balanced:
+            yield generate_block_table(reps,
+                                       n_species_class1=n_diff,
+                                       n_species_class2=n_diff,
+                                       n_species_shared=n_species-2*n_diff,
+                                       effect_size=a,
+                                       n_contaminants=n_contaminants, lam=lam, 
+                                       library_size=library_size)
+        else:
+            yield generate_balanced_block_table(reps,
+                                                n_species_class1=n_diff,
+                                                n_species_class2=n_diff,
+                                                n_species_shared=n_species-2*n_diff,
+                                                effect_size=a,
+                                                n_contaminants=n_contaminants, lam=lam)
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,
                                               intervals, n_species,
@@ -324,11 +410,12 @@ def compositional_regression_effect_size_generator(
         pd.Series
            Species actually differentially abundant.
     """
-    gradient = np.linspace(0, max_gradient, gradient_intervals)
-    betas = np.linspace(0, max_beta, beta_intervals)
-    g = np.linspace(0, max_gradient, n_species)
     for b in betas:
+        g = np.linspace(0, max_gradient, n_species)
         mu = g * b
+        gradient = np.linspace(0, np.max(mu), gradient_intervals)
+        betas = np.linspace(0, max_beta, beta_intervals)
+
         yield generate_band_table(mu, sigma, gradient, n_species,
                                   lam, n_contaminants=n_contaminants,
                                   library_size=10000)

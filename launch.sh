@@ -23,6 +23,7 @@
 #     --max-alpha 10 --reps 10 --intervals 3 \
 #     --n-species 10 --n-diff 5 \
 #     --n-contaminants 3 --lam 0.1 \
+#     --balanced False \
 #     --output-dir pls_balances/results/effect_size_benchmarks_test
 # 
 # generate.py compositional_variable_features \

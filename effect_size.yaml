@@ -1,6 +1,6 @@
 category: 'group'
 benchmark: 'effect_size'
-output_dir: 'pls_balances/results/effect_size_benchmarks_round4/'
+output_dir: 'pls_balances/results/effect_size_benchmarks_round5/'
 # output_dir: 'pls_balances/results/effect_size_benchmarks_test/'
 intervals: 20
 sigma: 1

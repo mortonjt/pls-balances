@@ -79,17 +79,22 @@ def noisify(table_file, metadata_file,
               help='Scale factor for exponential contamination urn.')
 @click.option('--library-size', default=0.1,
               help='Library size (i.e. sequencing depth)..')
+@click.option('--balanced', default=False,
+              help='Specifies if effect size should be symetric (True) '
+              'or assymetric (False)')
 @click.option('--output-dir',
               help='output directory')
 def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, n_diff,
                               n_contaminants, lam,
                               library_size,
+                              balanced,
                               output_dir):
     os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
         max_alpha, reps, intervals, n_species, n_diff,
-        n_contaminants, lam, library_size=library_size
+        n_contaminants, lam, library_size=library_size,
+        balanced=balanced
     )
     for i, g in enumerate(gen):
         table, groups, truth = g
