@@ -1,11 +1,17 @@
 category: 'gradient'
 benchmark: 'effect_size'
-output_dir: 'pls_balances/results/effect_size_regression_benchmarks_test/'
-intervals: 3
+output_dir: 'pls_balances/results/effect_size_regression_benchmarks_round4/'
+# output_dir: 'pls_balances/results/effect_size_regression_benchmarks_test/'
+intervals: 20
 sigma: 1
 tools:
 - pls_balances
 - pearson
 - spearman
+<<<<<<< HEAD
+- lasso
+- random_forest
+=======
 - random_forest
 - lasso
+>>>>>>> cc40985ba20425c24ff9d0f7d35abaf0a7ffdabb

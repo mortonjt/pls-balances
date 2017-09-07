@@ -25,14 +25,13 @@ def compute_confusion_matrices(table_files, result_files,
     """
     # only use the result files that match with the output_file
     out_suf = splitext(basename(output_file))[0]
-    result_files = list(filter(lambda x: out_suf in basename(x), result_files))
 
+    result_files = list(filter(lambda x: out_suf in basename(x), result_files))
     index_names = list(map(lambda x: splitext(basename(x))[0], table_files))
-    suf = splitext(basename(result_files[0]))[0]
-    col_names = ['%s_TP' % suf,
-                 '%s_FP' % suf,
-                 '%s_FN' % suf,
-                 '%s_TN' % suf]
+    col_names = ['%s_TP' % out_suf,
+                 '%s_FP' % out_suf,
+                 '%s_FN' % out_suf,
+                 '%s_TN' % out_suf]
     TP, FP, FN, TN = 0, 1, 2, 3
 
     stats = pd.DataFrame(columns=col_names, index=table_files)
