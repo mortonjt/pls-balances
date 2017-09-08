@@ -7,7 +7,9 @@ from skbio.stats.composition import perturb, closure
 from pls_balances.src.generators import (compositional_effect_size_generator,
                                          compositional_variable_features_generator,
                                          compositional_regression_prefilter_generator,
-                                         compositional_regression_effect_size_generator)
+                                         compositional_regression_effect_size_generator,
+                                         library_size_difference_generator)
+
 from pls_balances.src.sim import multinomial_sample, compositional_noise
 from biom import Table, load_table
 from biom.util import biom_open
@@ -103,6 +105,58 @@ def compositional_effect_size(max_alpha, reps, intervals,
         output_truth = "%s/truth.%d.csv" % (output_dir, i)
         deposit(table, groups, truth,
                 output_table, output_groups, output_truth)
+
+@generate.command()
+@click.option('--effect-size', default=2,
+              help=('The effect size difference between the '
+                    'differientially abundant features.'))
+@click.option('--reps', default=30,
+              help='Number of samples in each group.')
+@click.option('--intervals', default=30,
+              help='Number of effect size benchmarks to test.')
+@click.option('--n-species', default=100,
+              help='Number of species')
+@click.option('--n-diff', default=50,
+              help='Number of differentially abundant species')
+@click.option('--lam-diff', default=0.1,
+              help='Scale factor for exponential contamination urn ')
+@click.option('--n-contaminants', default=100,
+              help='Number of species')
+@click.option('--lam-contaminants', default=0.1,
+              help='Scale factor for the differientially abundant species')
+@click.option('--min-library-size', default=1000,
+              help='Library size (i.e. sequencing depth)..')
+@click.option('--max-library-size', default=10000,
+              help='Library size (i.e. sequencing depth)..')
+@click.option('--output-dir',
+              help='output directory')
+def library_size_difference(effect_size, reps, intervals,
+                            n_species, n_diff, lam_diff,
+                            n_contaminants, lam_contaminants,
+                            min_library_size, max_library_size,
+                            output_dir):
+
+    gen = library_size_difference_generator(
+        effect_size=effect_size,
+        reps=reps,
+        intervals=intervals,
+        n_species=n_species,
+        n_diff=n_diff,
+        lam_diff=lam_diff,
+        n_contaminants=n_contaminants,
+        lam_contaminants=lam_contaminants,
+        min_library_size=min_library_size,
+        max_library_size=max_library_size)
+
+    os.mkdir(output_dir)
+    for i, g in enumerate(gen):
+        table, groups, truth = g
+        output_table = "%s/table.%d.biom" % (output_dir, i)
+        output_groups = "%s/metadata.%d.txt" % (output_dir, i)
+        output_truth = "%s/truth.%d.csv" % (output_dir, i)
+        deposit(table, groups, truth,
+                output_table, output_groups, output_truth)
+
 
 
 @generate.command()

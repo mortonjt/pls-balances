@@ -536,9 +536,9 @@ def library_size_difference_generator(
     reps : int
         Number of replicate samples per test.
     intervals : int
-        Number of effect size intervals.  This corresponds to the
+        Number of library size intervals.  This corresponds to the
         number of experiments to run.
-g    n_species : int
+    n_species : int
         Number of species.
     n_diff : int
         Number of differentially abundant species in each group.
