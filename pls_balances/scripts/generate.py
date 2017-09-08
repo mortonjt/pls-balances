@@ -108,6 +108,8 @@ def compositional_effect_size(max_alpha, reps, intervals,
               help='Number of effect size benchmarks to test.')
 @click.option('--n-species', default=100,
               help='Number of species')
+@click.option('--asymmetry', is_flag=True, default=False,
+              help='Fold-change applied to max-changing species in both sample groups = False')
 @click.option('--n-contaminants', default=100,
               help='Number of species')
 @click.option('--lam', default=0.1,
@@ -116,12 +118,12 @@ def compositional_effect_size(max_alpha, reps, intervals,
               help='output directory')
 def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
-                                    n_contaminants, lam,
-                                    output_dir):
+                                    asymmetry, n_contaminants,
+                                    lam, output_dir):
 
     gen = compositional_variable_features_generator(
         max_changing, fold_change, reps,
-        intervals, n_species,
+        intervals, n_species, asymmetry,
         n_contaminants, lam
     )
     os.mkdir(output_dir)
