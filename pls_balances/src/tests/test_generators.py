@@ -146,12 +146,12 @@ class TestCompositionalEffectSize(unittest.TestCase):
 
         exp_metadata = pd.DataFrame(
             {'S0': [0, 4, 2, 10],
-             'S1': [0, 4, 2, 10],
+             'S1': [0, 4, 2, 55],
              'S2': [0, 4, 2, 10],
-             'S3': [0, 4, 2, 10],
-             'S4': [1, 4, 2, 55],
+             'S3': [0, 4, 2, 55],
+             'S4': [1, 4, 2, 10],
              'S5': [1, 4, 2, 55],
-             'S6': [1, 4, 2, 55],
+             'S6': [1, 4, 2, 10],
              'S7': [1, 4, 2, 55]},
             index=['group', 'n_diff', 'effect_size', 'library_size']).T
         pdt.assert_frame_equal(metadata, exp_metadata, check_less_precise=True)

@@ -80,7 +80,7 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
       ground_truth = (list(s_ids[:n_species_class1]) +
                       list(s_ids[-n_species_class2:]))
     else:
-      ground_truth = (list(s_ids[:n_species_class1]))      
+      ground_truth = (list(s_ids[:n_species_class1]))
 
     return table, metadata, ground_truth
 
@@ -583,8 +583,7 @@ def library_size_difference_generator(
            Species actually differentially abundant.
     """
     for a in np.linspace(min_library_size, max_library_size, intervals):
-        library_sizes = ([min_library_size] * reps +
-                         [int(a)] * reps)
+        library_sizes = [min_library_size, int(a)] * reps
         yield generate_exponential_block_table(
             reps, n_species_class1=n_diff,
             lam_class1=lam_diff,
