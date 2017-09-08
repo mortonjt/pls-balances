@@ -1,4 +1,3 @@
-
 """
 This file generates feature tables for benchmarking
 """
@@ -70,6 +69,103 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
     metadata = pd.DataFrame({'group': metadata})
     metadata['n_diff'] = n_species_class1 + n_species_class2
     metadata['effect_size'] = effect_size
+    metadata['library_size'] = library_size
+    metadata.index = ['S%d' % i for i in range(len(metadata.index))]
+    table = pd.DataFrame(data)
+
+    table.index = ['S%d' % i for i in range(len(table.index))]
+    table.columns = s_ids + c_ids
+    ground_truth = (list(s_ids[:n_species_class1]) +
+                    list(s_ids[-n_species_class2:]))
+
+    return table, metadata, ground_truth
+
+
+def generate_exponential_block_table(
+        reps,
+        n_species_class1,
+        lam_class1,
+        n_species_class2,
+        lam_class2,
+        n_contaminants,
+        lam_contaminants,
+        n_species_shared,
+        effect_size,
+        library_size=10000):
+    """ Generate block table, where the differentially abundant species
+    are exponentially distributed.
+
+    Parameters
+    ----------
+    reps : int
+        Number of replicate samples per test.
+    n_species_class1 : int
+        Number of species changing in class1.
+    lam_class1: int
+       Decay constant for class1 urn (assumes that the contaminant urn
+       follows an exponential distribution).  Good for modeling
+       low count noise.
+    n_species_class2 : int
+        Number of species changing in class2.
+    lam_class2: int
+       Decay constant for class1 urn (assumes that the contaminant urn
+       follows an exponential distribution).  Good for modeling
+       low count noise.
+    n_contaminants : int
+       Number of contaminant species.
+    lam_contaminants : float
+       Decay constant for contaminant urn (assumes that the contaminant urn
+       follows an exponential distribution).
+    n_species_shared: int
+        Number of species shared between classes.
+    effect_size : int
+        The effect size difference between the feature abundances.
+    library_size : np.array
+        A vector specifying the library sizes per sample.
+
+    Returns
+    -------
+    generator of
+        pd.DataFrame
+           Ground truth tables.
+        pd.DataFrame
+           Metadata group categories, n_diff and effect_size
+        pd.Series
+           Species actually differentially abundant.
+    """
+    data = []
+    metadata = []
+    # this needs to be fixed
+    x = np.linspace(0, 1, n_species_class1)
+    for _ in range(reps):
+        data.append((expon.pdf(x, scale=lam_class2) * effect_size).tolist() +
+                    [1]*(n_species_class2+n_species_shared))
+
+        metadata += [0]
+
+    x = np.linspace(0, 1, n_species_class2)
+    for _ in range(reps):
+        data.append([1]*(n_species_class1+n_species_shared) +
+                    (expon.pdf(x, scale=lam_class2) * effect_size).tolist())
+
+        metadata += [1]
+    data = np.vstack(data)
+
+    n_species = n_species_class1 + n_species_class2 + n_species_shared
+    x = np.linspace(0, 1, n_contaminants)
+    contaminant_urn = closure(expon.pdf(x, scale=lam_contaminants))
+    contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
+                                 data.shape[0], axis=0)
+
+    data = np.hstack((data, contaminant_urns))
+    s_ids = ['F%d' % i for i in range(n_species)]
+    c_ids = ['X%d' % i for i in range(n_contaminants)]
+    data = closure(data)
+
+    metadata = pd.DataFrame({'group': metadata})
+    metadata['n_diff'] = n_species_class1 + n_species_class2
+    metadata['effect_size'] = effect_size
+
     metadata['library_size'] = library_size
     metadata.index = ['S%d' % i for i in range(len(metadata.index))]
     table = pd.DataFrame(data)
@@ -162,7 +258,7 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
 
 def compositional_effect_size_generator(max_alpha, reps,
                                         intervals, n_species, n_diff,
-                                        n_contaminants=2, lam=0.1, 
+                                        n_contaminants=2, lam=0.1,
                                         library_size=10000, balanced=True):
     """ Generates tables where the effect size changes.
 
@@ -203,7 +299,7 @@ def compositional_effect_size_generator(max_alpha, reps,
                                        n_species_class2=n_diff,
                                        n_species_shared=n_species-2*n_diff,
                                        effect_size=a,
-                                       n_contaminants=n_contaminants, lam=lam, 
+                                       n_contaminants=n_contaminants, lam=lam,
                                        library_size=library_size)
         else:
             yield generate_balanced_block_table(reps,
@@ -410,18 +506,83 @@ def compositional_regression_effect_size_generator(
         pd.Series
            Species actually differentially abundant.
     """
+    betas = np.linspace(0, max_beta, beta_intervals)
     for b in betas:
         g = np.linspace(0, max_gradient, n_species)
         mu = g * b
         gradient = np.linspace(0, np.max(mu), gradient_intervals)
-        betas = np.linspace(0, max_beta, beta_intervals)
-
         yield generate_band_table(mu, sigma, gradient, n_species,
                                   lam, n_contaminants=n_contaminants,
                                   library_size=10000)
 
-def library_size_difference_generator():
-    pass
+
+def library_size_difference_generator(
+        effect_size,
+        reps,
+        intervals,
+        n_species,
+        n_diff,
+        lam_diff=0.1,
+        n_contaminants=2,
+        lam_contaminants=0.1,
+        min_library_size=100000,
+        max_library_size=1000000):
+    """ Generates tables where the effect size changes.
+
+    Parameters
+    ----------
+    effect_size : float
+        Effect size represented as log fold change
+    reps : int
+        Number of replicate samples per test.
+    intervals : int
+        Number of effect size intervals.  This corresponds to the
+        number of experiments to run.
+g    n_species : int
+        Number of species.
+    n_diff : int
+        Number of differentially abundant species in each group.
+    lam_diff : float
+       Decay constant for differentially abundant species urn
+       (assumes that the urns follows an exponential distribution).
+    n_contaminants : int
+       Number of contaminant species.
+    lam_contaminants : float
+       Decay constant for contaminant urn (assumes that the contaminant urn
+       follows an exponential distribution).
+    min_library_size: int
+       Minimum library size (default: 10000).
+    max_library_size : int
+       Maximum library size (default: 100000).
+    library_intervals : int
+       Number of library depths to benchmark.
+
+    Returns
+    -------
+    generator of
+        pd.DataFrame
+           Ground truth tables.
+        pd.Series
+           Metadata group categories.
+        pd.Series
+           Species actually differentially abundant.
+    """
+    for a in np.linspace(min_library_size, max_library_size, intervals):
+        library_sizes = ([min_library_size] * reps +
+                         [int(a)] * reps)
+        yield generate_exponential_block_table(
+            reps, n_species_class1=n_diff,
+            lam_class1=lam_diff,
+            n_species_class2=n_diff,
+            lam_class2=lam_diff,
+            n_contaminants=n_contaminants,
+            lam_contaminants=lam_contaminants,
+            n_species_shared=n_species-2*n_diff,
+            effect_size=effect_size,
+            library_size=library_sizes)
+
+
+
 
 def missing_at_random_generator():
     pass

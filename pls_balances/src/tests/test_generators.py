@@ -8,7 +8,8 @@ from pls_balances.src.generators import (
     compositional_effect_size_generator,
     compositional_variable_features_generator,
     compositional_regression_prefilter_generator,
-    compositional_regression_effect_size_generator)
+    compositional_regression_effect_size_generator,
+    library_size_difference_generator)
 
 
 class TestCompositionalEffectSize(unittest.TestCase):
@@ -103,6 +104,58 @@ class TestCompositionalEffectSize(unittest.TestCase):
         pdt.assert_frame_equal(metadata, exp_metadata)
 
         exp_truth = ['F0', 'F4']
+        self.assertListEqual(truth, exp_truth)
+
+    def test_composition_effect_size_exponential(self):
+
+        gen = library_size_difference_generator(
+            reps=4,
+            n_species=8,
+            n_diff=2,
+            lam_diff=0.1,
+            n_contaminants=2,
+            lam_contaminants=0.1,
+            effect_size=2,
+            min_library_size=10,
+            max_library_size=100,
+            intervals=3)
+
+        table, metadata, truth = next(gen)
+        table, metadata, truth = next(gen)
+        exp_table = pd.DataFrame(
+            {'S0': [0.740716, 0.0000336284, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.037036, 0.037036, 0.037034, 0.000002],
+             'S1': [0.740716, 0.0000336284, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.037036, 0.037036, 0.037034, 0.000002],
+             'S2': [0.740716, 0.0000336284, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.037036, 0.037036, 0.037034, 0.000002],
+             'S3': [0.740716, 0.0000336284, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.037036, 0.037036, 0.037034, 0.000002],
+             'S4': [0.037036, 0.037036, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.740716, 0.0000336284, 0.037034, 0.000002],
+             'S5': [0.037036, 0.037036, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.740716, 0.0000336284, 0.037034, 0.000002],
+             'S6': [0.037036, 0.037036, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.740716, 0.0000336284, 0.037034, 0.000002],
+             'S7': [0.037036, 0.037036, 0.037036, 0.037036, 0.037036,
+                    0.037036, 0.740716, 0.0000336284, 0.037034, 0.000002]
+            }, index=['F0', 'F1', 'F2', 'F3', 'F4',
+                      'F5', 'F6', 'F7', 'X0', 'X1']).T
+
+        pdt.assert_frame_equal(table, exp_table, check_less_precise=True)
+
+        exp_metadata = pd.DataFrame(
+            {'S0': [0, 4, 2, 10],
+             'S1': [0, 4, 2, 10],
+             'S2': [0, 4, 2, 10],
+             'S3': [0, 4, 2, 10],
+             'S4': [1, 4, 2, 55],
+             'S5': [1, 4, 2, 55],
+             'S6': [1, 4, 2, 55],
+             'S7': [1, 4, 2, 55]},
+            index=['group', 'n_diff', 'effect_size', 'library_size']).T
+        pdt.assert_frame_equal(metadata, exp_metadata, check_less_precise=True)
+        exp_truth = ['F0', 'F1', 'F6', 'F7']
         self.assertListEqual(truth, exp_truth)
 
     def test_composition_effect_size_balanced(self):
