@@ -158,7 +158,6 @@ def library_size_difference(effect_size, reps, intervals,
                 output_table, output_groups, output_truth)
 
 
-
 @generate.command()
 @click.option('--max-changing', default=2,
               help='Maximum number of changing species.')
