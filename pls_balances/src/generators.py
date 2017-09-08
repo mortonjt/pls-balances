@@ -75,8 +75,12 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
 
     table.index = ['S%d' % i for i in range(len(table.index))]
     table.columns = s_ids + c_ids
-    ground_truth = (list(s_ids[:n_species_class1]) +
-                    list(s_ids[-n_species_class2:]))
+
+    if n_species_class2 != 0:
+      ground_truth = (list(s_ids[:n_species_class1]) +
+                      list(s_ids[-n_species_class2:]))
+    else:
+      ground_truth = (list(s_ids[:n_species_class1]))      
 
     return table, metadata, ground_truth
 
@@ -310,7 +314,7 @@ def compositional_effect_size_generator(max_alpha, reps,
                                                 n_contaminants=n_contaminants, lam=lam)
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,
-                                              intervals, n_species,
+                                              intervals, n_species, asymmetry=False,
                                               n_contaminants=2, lam=0.1):
     """ Generates tables where the number of changing features changes.
 
@@ -327,6 +331,9 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
         number of experiments to run.
     n_species : int
         Number of species.
+    asymmetry : bool
+        Fold change applied to max_changing species in both Groups 1 and 2 (False).
+        Fold change applied to max_changing species in Group 1 only (True).
     n_contaminants : int
        Number of contaminant species.
     lam : float
@@ -346,12 +353,20 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
     """
     for a in np.linspace(0, max_changing, intervals):
         a_ = int(a)
-        yield generate_block_table(reps,
-                                   n_species_class1=a_,
-                                   n_species_class2=a_,
-                                   n_species_shared=n_species - 2*a_,
-                                   effect_size=fold_change,
-                                   n_contaminants=n_contaminants, lam=lam)
+        if asymmetry == False:
+          yield generate_block_table(reps,
+                                     n_species_class1=a_,
+                                     n_species_class2=a_,
+                                     n_species_shared=n_species - 2*a_,
+                                     effect_size=fold_change,
+                                     n_contaminants=n_contaminants, lam=lam)
+        else:
+          yield generate_block_table(reps,
+                                     n_species_class1=a_,
+                                     n_species_class2=0,
+                                     n_species_shared=n_species - a_,
+                                     effect_size=fold_change,
+                                     n_contaminants=n_contaminants, lam=lam)
 
 
 def generate_band_table(mu, sigma, gradient, n_species,
