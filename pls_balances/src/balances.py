@@ -7,6 +7,7 @@ from sklearn.metrics import roc_curve
 from sklearn.metrics import auc
 import numpy as np
 import pandas as pd
+from scipy.stats import linregress
 
 
 def solve(w1, w2, m1, m2, std1, std2):
@@ -52,7 +53,7 @@ def balance_classify(table, cats, num_folds, **init_kwds):
     """
     skf = KFold(n_splits=num_folds, shuffle=True)
 
-    ctable = pd.DataFrame(clr(centralize(table+1)),
+    ctable = pd.DataFrame(clr(centralize(table)),
                           index=table.index, columns=table.columns)
 
     cv = pd.DataFrame(columns=['Q2', 'AUROC'], index=np.arange(num_folds))
@@ -92,7 +93,59 @@ def balance_classify(table, cats, num_folds, **init_kwds):
     l, r = round_balance(pls_df, **init_kwds)
     denom = pls_df.loc[pls_df.PLS1 < l]
     num = pls_df.loc[pls_df.PLS1 > r]
-    pls_balance = (np.log(table.loc[:, num.index] + 1).mean(axis=1) -
-                   np.log(table.loc[:, denom.index] + 1).mean(axis=1))
+    pls_balance = (np.log(table.loc[:, num.index]).mean(axis=1) -
+                   np.log(table.loc[:, denom.index]).mean(axis=1))
+
+    return num, denom, pls_balance, cv
+
+
+def balance_regression(table, cats, num_folds, **init_kwds):
+    """
+    Builds a balance classifier. If categorical, it is assumed
+    that the classes are binary.
+    """
+    skf = KFold(n_splits=num_folds, shuffle=True)
+    cats = cats * -1 # wtf??
+    ctable = pd.DataFrame(clr(centralize(table)),
+                          index=table.index, columns=table.columns)
+
+    cv = pd.DataFrame(columns=['Q2'], index=np.arange(num_folds))
+    for i, (train, test) in enumerate(skf.split(ctable.values, cats.values)):
+
+        X_train, X_test = ctable.iloc[train], ctable.iloc[test]
+        Y_train, Y_test = cats.iloc[train], cats.iloc[test]
+        plsc = PLSRegression(n_components=1)
+        plsc.fit(X=X_train, Y=Y_train)
+        pls_df = pd.DataFrame(plsc.x_weights_, index=ctable.columns, columns=['PLS1'])
+
+        l, r = round_balance(pls_df, **init_kwds)
+        denom = pls_df.loc[pls_df.PLS1 < l]
+        num = pls_df.loc[pls_df.PLS1 > r]
+
+        idx = table.index[train]
+        pls_balance = (np.log(table.loc[idx, num.index] + 1).mean(axis=1) -
+                       np.log(table.loc[idx, denom.index] + 1).mean(axis=1))
+        b_, int_, _, _, _ = linregress(pls_balance, Y_train)
+
+        idx = table.index[test]
+        pls_balance = (np.log(table.loc[idx, num.index] + 1).mean(axis=1) -
+                       np.log(table.loc[idx, denom.index] + 1).mean(axis=1))
+        pred = pls_balance * b_ + int_
+
+        press = ((pred - Y_test)**2).sum()
+        tss = ((Y_test.mean() - Y_test)**2).sum()
+        Q2 = 1 - (press / tss)
+
+        cv.loc[i, 'Q2'] = Q2
+
+    # build model on entire dataset
+    plsc = PLSRegression(n_components=1)
+    plsc.fit(X=table.values, Y=cats.values)
+    pls_df = pd.DataFrame(plsc.x_weights_, index=ctable.columns, columns=['PLS1'])
+    l, r = round_balance(pls_df, **init_kwds)
+    denom = pls_df.loc[pls_df.PLS1 < l]
+    num = pls_df.loc[pls_df.PLS1 > r]
+    pls_balance = (np.log(table.loc[:, num.index]).mean(axis=1) -
+                   np.log(table.loc[:, denom.index]).mean(axis=1))
 
     return num, denom, pls_balance, cv
