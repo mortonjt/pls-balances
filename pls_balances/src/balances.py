@@ -1,6 +1,6 @@
 from skbio.stats.composition import clr, centralize
-from sklearn.cross_decomposition import PLSRegression
 from sklearn.mixture import GaussianMixture
+from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import StratifiedKFold, KFold
 from sklearn import preprocessing
 from sklearn.metrics import roc_curve
