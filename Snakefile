@@ -27,14 +27,9 @@ TOOLS = config['tools']
 #TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
 
 
-
 rule all:
     input:
-        # expand("{output_dir}/ancom.{sample}.results", sample=SAMPLES)
-        #"{output_dir}/ancom.summary"
-        # expand("{output_dir}/{tool}.summary", tool=TOOLS)
-        output_dir + "confusion_matrix.summary"
-
+        output_dir+"confusion_matrix.summary"
 
 rule inject_noise:
     input:
