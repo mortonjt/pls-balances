@@ -50,26 +50,42 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
     n_species = n_species_class1 + n_species_class2 + n_species_shared
 
     if template is None:
-      for _ in range(reps):
-          data.append([effect_size]*n_species_class1 +
-                      [1]*(n_species_class2+n_species_shared))
-          metadata += [0]
-
-      for _ in range(reps):
-          data.append([1]*(n_species_class1+n_species_shared) +
-                      [effect_size]*n_species_class2)
-          metadata += [1]
-
-    else:
-      for _ in range(reps):
-        data.append(np.concatenate((effect_size*template[:(n_species_class1)],
-          template[(n_species_class1):n_species]), axis=0))
+        for _ in range(reps):
+            data.append([effect_size]*n_species_class1 +
+                        [1]*(n_species_class2+n_species_shared))
         metadata += [0]
 
-      for _ in range(reps):
-          data.append(np.concatenate((template[:(n_species_class1+n_species_shared)],
-                      effect_size*template[(n_species-1):n_species]), axis=0))
-          metadata += [1]
+        for _ in range(reps):
+            data.append([1]*(n_species_class1+n_species_shared) +
+                        [effect_size]*n_species_class2)
+        metadata += [1]
+
+    else:
+        # randomly shuffle template
+        template = np.random.permutation(template)
+
+        # pad with zeros to make sure that the template is large enough
+        if len(template) < n_species:
+            z = np.zeros(n_species - len(template))
+            template = np.concatenate((template, z))
+        else:
+            template = template[:n_species]
+
+        # add pseudocount to give remaining entries a non-zero probability of
+        # being observed
+        template = template + 1
+
+        for _ in range(reps):
+            data.append(np.concatenate(
+                (effect_size*template[:n_species_class1],
+                 template[n_species_class1:]), axis=0))
+            metadata += [0]
+
+        for _ in range(reps):
+            data.append(np.concatenate(
+                (template[:-n_species_class2],
+                 effect_size*template[-n_species_class2:]),axis=0))
+            metadata += [1]
 
     data = closure(np.vstack(data))
     x = np.linspace(0, 1, n_contaminants)
@@ -262,7 +278,7 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
               np.concatenate(((1/effect_size)*template[:(n_species_class1)],
               template[(n_species_class1):(n_species_class2+n_species_shared)],
               effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
-          metadata += [1]      
+          metadata += [1]
 
     data = closure(np.vstack(data))
     x = np.linspace(0, 1, n_contaminants)
@@ -393,7 +409,7 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
                                      n_species_class2=a_,
                                      n_species_shared=n_species - 2*a_,
                                      effect_size=fold_change,
-                                     n_contaminants=n_contaminants, lam=lam, 
+                                     n_contaminants=n_contaminants, lam=lam,
                                      template=template)
         else:
           yield generate_block_table(reps,

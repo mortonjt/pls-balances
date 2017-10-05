@@ -11,6 +11,9 @@ from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy.stats import ttest_ind, mannwhitneyu, pearsonr, spearmanr
 from sklearn import linear_model
 from sklearn.ensemble import RandomForestRegressor
+import tempfile
+from subprocess import Popen
+import io
 
 
 @click.group()
@@ -138,6 +141,72 @@ def mann_whitney_cmd(table_file, metadata_file, category, output_file):
     reject = p < 0.05
     features = pd.Series(reject, index=table.columns)
     diff_features = list(features.loc[features>0].index)
+    with open(output_file, 'w') as f:
+        f.write(','.join(diff_features))
+
+
+@run.command()
+@click.option('--table-file',
+              help='Input biom table of abundances')
+@click.option('--metadata-file',
+              help='Input metadata file')
+@click.option('--category',
+              help='Category specifying groups')
+@click.option('--output-file',
+              help='output file of differientially abundance features.')
+def lefse_cmd(table_file, metadata_file, category, output_file):
+    fdir = tempfile.mkdtemp() 
+    pickle_file = '%s/tmp.pickle' % fdir
+    tsv_file = '%s/tmp.txt' % fdir
+    md_file = '%s/tmp.md.txt' % fdir
+    lefse_file = '%s/tmp.lefse.txt' % fdir
+
+    md = pd.read_table(metadata_file, index_col=0)
+    md.to_csv(md_file, sep='\t', index_label='#SampleID')    
+
+    table = load_table(table_file)
+    table = pd.DataFrame(np.array(table.matrix_data.todense()),
+                         columns=table.ids(axis='sample'),
+                         index=table.ids(axis='observation'))
+
+
+    # add some garbage taxonomy column to make lefse happy
+    table['Consensus Lineage'] = ['meh;blah'] * len(table.index)
+    
+    output = io.StringIO()
+    output.write('# Constructed from biom file\n')
+    table.to_csv(output, sep='\t', index_label='#OTU ID')
+    open(tsv_file, 'w').write(output.getvalue())
+
+    convert_cmd = ('source activate lefse; '
+                   'qiime2lefse.py --in %s --md %s -c %s --out %s') % (
+        tsv_file,
+        md_file,
+        category,
+        lefse_file
+        )
+
+    format_cmd = ('source activate lefse;'
+                  'lefse-format_input.py %s %s -c 1 -s -1 -u -1') % (
+        lefse_file,
+        pickle_file
+        )
+
+    lefse_cmd = ('source activate lefse; '
+                 'run_lefse.py %s %s;'
+                 'source activate pls-balances;') % (
+        pickle_file,
+        output_file
+        )
+    convert_proc = Popen(convert_cmd, shell=True)
+    convert_proc.wait()
+    format_proc = Popen(format_cmd, shell=True)
+    format_proc.wait()
+    lefse_proc = Popen(lefse_cmd, shell=True)
+    lefse_proc.wait()        
+    res = pd.read_table(lefse_file, index_col=0, header=None)
+    idx = res.iloc[:, 0] > 2
+    diff_features = list(res.loc[res.iloc[:, 0] > 2].index)
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
 
