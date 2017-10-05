@@ -106,6 +106,33 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_truth = ['F0', 'F4']
         self.assertListEqual(truth, exp_truth)
 
+        # test template
+        gen = compositional_effect_size_generator(max_alpha=1, reps=5,
+                                                  intervals=2, n_species=5, n_diff=1,
+                                                  n_contaminants=2, lam=0.1, template=np.array([7.0, 3.0, 1.0, 1.0, 2.0, 4.0, 6.0, 1.0, 10.0]))
+        table, metadata, truth = next(gen)
+        table, metadata, truth = next(gen)
+
+        exp_table = pd.DataFrame(
+            np.vstack((
+                np.array([.454545, .019481, .00649435, .00649435, .012987, 0.499977, 0.0000226989]),
+                np.array([.454545, .019481, .00649435, .00649435, .012987, 0.499977, 0.0000226989]),
+                np.array([.454545, .019481, .00649435, .00649435, .012987, 0.499977, 0.0000226989]),
+                np.array([.454545, .019481, .00649435, .00649435, .012987, 0.499977, 0.0000226989]),
+                np.array([.454545, .019481, .00649435, .00649435, .012987, 0.499977, 0.0000226989]),
+                np.array([.109375, .046875, .015625, .015625, .3125, 0.499977, 0.0000226989]),
+                np.array([.109375, .046875, .015625, .015625, .3125, 0.499977, 0.0000226989]),
+                np.array([.109375, .046875, .015625, .015625, .3125, 0.499977, 0.0000226989]),
+                np.array([.109375, .046875, .015625, .015625, .3125, 0.499977, 0.0000226989]),
+                np.array([.109375, .046875, .015625, .015625, .3125, 0.499977, 0.0000226989])
+            )),
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4', 'X0', 'X1']
+        )
+        pdt.assert_frame_equal(table, exp_table, check_less_precise=True)
+
+
     def test_composition_effect_size_exponential(self):
 
         gen = library_size_difference_generator(
@@ -163,7 +190,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         gen = compositional_effect_size_generator(max_alpha=1, reps=5,
                                                   intervals=2, n_species=5, n_diff=1,
                                                   n_contaminants=2, lam=0.1,
-                                                  balanced=False)
+                                                  balanced=False, template=None)
         table, metadata, truth = next(gen)
         table, metadata, truth = next(gen)
 

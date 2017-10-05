@@ -10,7 +10,7 @@ from scipy.stats import norm, expon
 def generate_block_table(reps, n_species_class1, n_species_class2,
                          n_species_shared, effect_size,
                          lam, n_contaminants,
-                         library_size=10000):
+                         library_size=10000, template=None):
     """
     Parameters
     ----------
@@ -31,6 +31,8 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
        follows an exponential distribution).
     library_size : np.array
         A vector specifying the library sizes per sample.
+    template : np.array
+        A vector specifying feature abundances or relative proportions.
 
     Returns
     -------
@@ -44,19 +46,33 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
     """
     data = []
     metadata = []
-    for _ in range(reps):
-        data.append([effect_size]*n_species_class1 +
-                    [1]*(n_species_class2+n_species_shared))
+
+    n_species = n_species_class1 + n_species_class2 + n_species_shared
+
+    if template is None:
+      for _ in range(reps):
+          data.append([effect_size]*n_species_class1 +
+                      [1]*(n_species_class2+n_species_shared))
+          metadata += [0]
+
+      for _ in range(reps):
+          data.append([1]*(n_species_class1+n_species_shared) +
+                      [effect_size]*n_species_class2)
+          metadata += [1]
+
+    else:
+      for _ in range(reps):
+        data.append(np.concatenate((effect_size*template[:(n_species_class1)],
+          template[(n_species_class1):n_species]), axis=0))
         metadata += [0]
 
-    for _ in range(reps):
-        data.append([1]*(n_species_class1+n_species_shared) +
-                    [effect_size]*n_species_class2)
-        metadata += [1]
+      for _ in range(reps):
+          data.append(np.concatenate((template[:(n_species_class1+n_species_shared)],
+                      effect_size*template[(n_species-1):n_species]), axis=0))
+          metadata += [1]
 
     data = closure(np.vstack(data))
     x = np.linspace(0, 1, n_contaminants)
-    n_species = n_species_class1 + n_species_class2 + n_species_shared
     contaminant_urn = closure(expon.pdf(x, scale=lam))
     contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
                                  data.shape[0], axis=0)
@@ -185,7 +201,7 @@ def generate_exponential_block_table(
 def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
                                   n_species_shared, effect_size,
                                   lam, n_contaminants,
-                                  library_size=10000):
+                                  library_size=10000, template=None):
     """ Generates a data set where there is a neutral group of samples, and then there
     is some ecological succession where one group of species dies, and another group of
     species grows.
@@ -222,20 +238,34 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
     """
     data = []
     metadata = []
-    for _ in range(reps):
-        data.append([1]*(n_species_class1+n_species_class2+n_species_shared))
-        metadata += [0]
 
-    for _ in range(reps):
-        data.append(
-            [1/effect_size]*n_species_class1 +
-            [1]*(n_species_shared) +
-            [effect_size]*n_species_class2)
-        metadata += [1]
+    n_species = n_species_class1 + n_species_class2 + n_species_shared
+
+    if template is None:
+      for _ in range(reps):
+          data.append([1]*(n_species))
+          metadata += [0]
+
+      for _ in range(reps):
+          data.append(
+              [1/effect_size]*n_species_class1 +
+              [1]*(n_species_shared) +
+              [effect_size]*n_species_class2)
+          metadata += [1]
+    else:
+      for _ in range(reps):
+          data.append(template[:(n_species)])
+          metadata += [0]
+
+      for _ in range(reps):
+          data.append(
+              np.concatenate(((1/effect_size)*template[:(n_species_class1)],
+              template[(n_species_class1):(n_species_class2+n_species_shared)],
+              effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
+          metadata += [1]      
 
     data = closure(np.vstack(data))
     x = np.linspace(0, 1, n_contaminants)
-    n_species = n_species_class1 + n_species_class2 + n_species_shared
     contaminant_urn = closure(expon.pdf(x, scale=lam))
     contaminant_urns = np.repeat(np.expand_dims(contaminant_urn, axis=0),
                                  data.shape[0], axis=0)
@@ -263,7 +293,7 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
 def compositional_effect_size_generator(max_alpha, reps,
                                         intervals, n_species, n_diff,
                                         n_contaminants=2, lam=0.1,
-                                        library_size=10000, balanced=True):
+                                        library_size=10000, balanced=True, template=None):
     """ Generates tables where the effect size changes.
 
     Parameters
@@ -284,6 +314,8 @@ def compositional_effect_size_generator(max_alpha, reps,
     lam : float
        Decay constant for contaminant urn (assumes that the contaminant urn
        follows an exponential distribution).
+    template : np.array
+        A vector specifying feature abundances or relative proportions.
 
     Returns
     -------
@@ -304,18 +336,18 @@ def compositional_effect_size_generator(max_alpha, reps,
                                        n_species_shared=n_species-2*n_diff,
                                        effect_size=a,
                                        n_contaminants=n_contaminants, lam=lam,
-                                       library_size=library_size)
+                                       library_size=library_size, template=template)
         else:
             yield generate_balanced_block_table(reps,
                                                 n_species_class1=n_diff,
                                                 n_species_class2=n_diff,
                                                 n_species_shared=n_species-2*n_diff,
                                                 effect_size=a,
-                                                n_contaminants=n_contaminants, lam=lam)
+                                                n_contaminants=n_contaminants, lam=lam, template=template)
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,
                                               intervals, n_species, asymmetry=False,
-                                              n_contaminants=2, lam=0.1):
+                                              n_contaminants=2, lam=0.1, template=None):
     """ Generates tables where the number of changing features changes.
 
     Parameters
@@ -339,6 +371,8 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
     lam : float
        Decay constant for contaminant urn (assumes that the contaminant urn
        follows an exponential distribution).
+    template : np.array
+        A vector specifying feature abundances or relative proportions.
 
     Returns
     -------
@@ -359,14 +393,16 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
                                      n_species_class2=a_,
                                      n_species_shared=n_species - 2*a_,
                                      effect_size=fold_change,
-                                     n_contaminants=n_contaminants, lam=lam)
+                                     n_contaminants=n_contaminants, lam=lam, 
+                                     template=template)
         else:
           yield generate_block_table(reps,
                                      n_species_class1=a_,
                                      n_species_class2=0,
                                      n_species_shared=n_species - a_,
                                      effect_size=fold_change,
-                                     n_contaminants=n_contaminants, lam=lam)
+                                     n_contaminants=n_contaminants, lam=lam,
+                                     template=template)
 
 
 def generate_band_table(mu, sigma, gradient, n_species,
