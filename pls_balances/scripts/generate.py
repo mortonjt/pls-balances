@@ -94,7 +94,8 @@ def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, n_diff,
                               n_contaminants, lam,
                               library_size,
-                              balanced, template,
+                              balanced, template_biom,
+                              template_sample_name,
                               output_dir):
     templ = load_table(template_biom)
     template = templ.data(id=template_sample_name, axis='sample')
@@ -105,6 +106,7 @@ def compositional_effect_size(max_alpha, reps, intervals,
         n_contaminants, lam, library_size=library_size,
         balanced=balanced, template=template
     )
+
     for i, g in enumerate(gen):
         table, groups, truth = g
         output_table = "%s/table.%d.biom" % (output_dir, i)
