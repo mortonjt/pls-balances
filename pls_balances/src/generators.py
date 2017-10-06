@@ -359,7 +359,8 @@ def compositional_effect_size_generator(max_alpha, reps,
                                                 n_species_class2=n_diff,
                                                 n_species_shared=n_species-2*n_diff,
                                                 effect_size=a,
-                                                n_contaminants=n_contaminants, lam=lam, template=template)
+                                                n_contaminants=n_contaminants, lam=lam,
+                                                template=template)
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,
                                               intervals, n_species, asymmetry=False,
@@ -646,8 +647,6 @@ def library_size_difference_generator(
             n_species_shared=n_species-2*n_diff,
             effect_size=effect_size,
             library_size=library_sizes)
-
-
 
 
 def missing_at_random_generator():
