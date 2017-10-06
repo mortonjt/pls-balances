@@ -207,6 +207,7 @@ def lefse_cmd(table_file, metadata_file, category, output_file):
     res = pd.read_table(lefse_file, index_col=0, header=None)
     idx = res.iloc[:, 0] > 2
     diff_features = list(res.loc[res.iloc[:, 0] > 2].index)
+    diff_features = list(map(lambda x: x.split('|')[-1], diff_features))
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
 
