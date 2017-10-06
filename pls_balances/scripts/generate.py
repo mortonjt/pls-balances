@@ -84,20 +84,29 @@ def noisify(table_file, metadata_file,
 @click.option('--balanced', default=False,
               help='Specifies if effect size should be symetric (True) '
               'or assymetric (False)')
+@click.option('--template-biom', default=None,
+              help='Template biom file path.')
+@click.option('--template-sample-name', default=None,
+              help='Template sample name.')
 @click.option('--output-dir',
               help='output directory')
 def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, n_diff,
                               n_contaminants, lam,
                               library_size,
-                              balanced,
+                              balanced, template_biom,
+                              template_sample_name,
                               output_dir):
+    templ = load_table(template_biom)
+    template = templ.data(id=template_sample_name, axis='sample')
+
     os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
         max_alpha, reps, intervals, n_species, n_diff,
         n_contaminants, lam, library_size=library_size,
-        balanced=balanced
+        balanced=balanced, template=template
     )
+
     for i, g in enumerate(gen):
         table, groups, truth = g
         output_table = "%s/table.%d.biom" % (output_dir, i)
@@ -175,17 +184,20 @@ def library_size_difference(effect_size, reps, intervals,
               help='Number of species')
 @click.option('--lam', default=0.1,
               help='Scale factor for exponential contamination urn.')
+@click.option('--template', default=None, is_flag=False,
+              help='Specifies if a template (specified number or proportion array) '
+              'should be used (np.array) or not (None)')
 @click.option('--output-dir',
               help='output directory')
 def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
                                     asymmetry, n_contaminants,
-                                    lam, output_dir):
+                                    lam, template, output_dir):
 
     gen = compositional_variable_features_generator(
         max_changing, fold_change, reps,
         intervals, n_species, asymmetry,
-        n_contaminants, lam
+        n_contaminants, lam, template
     )
     os.mkdir(output_dir)
     for i, g in enumerate(gen):
