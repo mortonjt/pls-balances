@@ -59,6 +59,8 @@ def noisify(table_file, metadata_file,
         multinomial_sample(table_, depths=metadata['library_size']))
     table_.index = table.index
     table_.columns = list(table.columns)
+    # drop zeros -- they are not informative
+    table_ = table_.loc[:, table_.sum(axis=0) > 0]    
     t = Table(table_.T.values, table_.columns.values, table_.index.values)
     with biom_open(output_file, 'w') as f:
         t.to_hdf5(f, generated_by='moi')
