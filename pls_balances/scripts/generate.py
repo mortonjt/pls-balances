@@ -100,9 +100,11 @@ def compositional_effect_size(max_alpha, reps, intervals,
                               template_biom,
                               template_sample_name,
                               output_dir):
-    templ = load_table(template_biom)
-    template = templ.data(id=template_sample_name, axis='sample')
-
+    if template_biom is not None:
+        templ = load_table(template_biom)
+        template = templ.data(id=template_sample_name, axis='sample')
+    else:
+        template = None
     os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
         max_alpha, reps, intervals, n_species, n_diff,
@@ -201,8 +203,11 @@ def compositional_variable_features(max_changing, fold_change, reps,
                                     template_biom,
                                     template_sample_name,
                                     output_dir):
-    templ = load_table(template_biom)
-    template = templ.data(id=template_sample_name, axis='sample')
+    if template_biom is not None:
+        templ = load_table(template_biom)
+        template = templ.data(id=template_sample_name, axis='sample')
+    else:
+        template = None
 
     gen = compositional_variable_features_generator(
         max_changing, fold_change, reps,
