@@ -60,6 +60,7 @@ def noisify(table_file, metadata_file,
     table_.index = table.index
     table_.columns = list(table.columns)
 
+
     metadata['observed'] = np.sum(table_.sum(axis=0) > 0)
     metadata['unobserved'] = np.sum(table_.sum(axis=0)== 0)
     metadata.to_csv(metadata_file, sep='\t')
@@ -91,6 +92,10 @@ def noisify(table_file, metadata_file,
 @click.option('--asymmetry', is_flag=True, default=False,
               help=('Fold-change applied to max-changing species in both '
                     'sample groups = False'))
+@click.option('--fold-balance', is_flag=True, default=False,
+              help=('If False, then only the max-changing species will be '
+                    'increased in both sample groups.  Otherwise, one of the '
+                    'groups will be decreased, while the other group increases.'))
 @click.option('--template-biom', default=None,
               help='Template biom file path.')
 @click.option('--template-sample-name', default=None,
@@ -101,7 +106,7 @@ def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, n_diff,
                               n_contaminants, lam,
                               library_size,
-                              asymmetry,
+                              asymmetry, fold_balance,
                               template_biom,
                               template_sample_name,
                               output_dir):
@@ -110,11 +115,13 @@ def compositional_effect_size(max_alpha, reps, intervals,
         template = templ.data(id=template_sample_name, axis='sample')
     else:
         template = None
+
     os.mkdir(output_dir)
     gen = compositional_effect_size_generator(
         max_alpha, reps, intervals, n_species, n_diff,
         n_contaminants, lam, library_size=library_size,
-        balanced=asymmetry, template=template
+        asymmetry=asymmetry, fold_balance=fold_balance,
+        template=template
     )
 
     for i, g in enumerate(gen):
@@ -191,6 +198,10 @@ def library_size_difference(effect_size, reps, intervals,
 @click.option('--asymmetry', is_flag=True, default=False,
               help=('Fold-change applied to max-changing species in both '
                     'sample groups = False'))
+@click.option('--fold-balance', is_flag=True, default=False,
+              help=('If False, then only the max-changing species will be '
+                    'increased in both sample groups.  Otherwise, one of the '
+                    'groups will be decreased, while the other group increases.'))
 @click.option('--n-contaminants', default=100,
               help='Number of species')
 @click.option('--lam', default=0.1,
@@ -203,11 +214,12 @@ def library_size_difference(effect_size, reps, intervals,
               help='output directory')
 def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
-                                    asymmetry, n_contaminants,
-                                    lam,
+                                    asymmetry, fold_balance,
+                                    n_contaminants, lam,
                                     template_biom,
                                     template_sample_name,
                                     output_dir):
+
     if template_biom is not None:
         templ = load_table(template_biom)
         template = templ.data(id=template_sample_name, axis='sample')
@@ -215,9 +227,10 @@ def compositional_variable_features(max_changing, fold_change, reps,
         template = None
 
     gen = compositional_variable_features_generator(
-        max_changing, fold_change, reps,
-        intervals, n_species, asymmetry,
-        n_contaminants, lam, template
+        max_changing=max_changing, fold_change=fold_change,
+        reps=reps, intervals=intervals, n_species=n_species,
+        n_contaminants=n_contaminants, lam=lam, template=template,
+        asymmetry=asymmetry, fold_balance=fold_balance
     )
 
     os.mkdir(output_dir)
