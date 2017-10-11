@@ -263,10 +263,10 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
           metadata += [0]
 
       for _ in range(reps):
-          data.append(
-              [1/effect_size]*n_species_class1 +
-              [1]*(n_species_shared) +
-              [effect_size]*n_species_class2)
+          ary = [1/effect_size]*n_species_class1 + \
+                [1]*(n_species_shared) + \
+                [effect_size]*n_species_class2
+          data.append(ary)
           metadata += [1]
     else:
       for _ in range(reps):
@@ -362,7 +362,7 @@ def compositional_effect_size_generator(max_alpha, reps,
                                                     n_species_class1=n_diff,
                                                     n_species_class2=0,
                                                     n_species_shared=n_species-n_diff,
-                                                    effect_size=a,
+                                                    effect_size=a_,
                                                     n_contaminants=n_contaminants, lam=lam,
                                                     template=template)
             else:
@@ -370,7 +370,7 @@ def compositional_effect_size_generator(max_alpha, reps,
                                            n_species_class1=n_diff,
                                            n_species_class2=0,
                                            n_species_shared=n_species-n_diff,
-                                           effect_size=a,
+                                           effect_size=a_,
                                            n_contaminants=n_contaminants, lam=lam,
                                            library_size=library_size, template=template)
         else:
@@ -379,7 +379,7 @@ def compositional_effect_size_generator(max_alpha, reps,
                                                     n_species_class1=n_diff,
                                                     n_species_class2=n_diff,
                                                     n_species_shared=n_species-2*n_diff,
-                                                    effect_size=a,
+                                                    effect_size=a_,
                                                     n_contaminants=n_contaminants, lam=lam,
                                                     template=template)
             else:
@@ -387,7 +387,7 @@ def compositional_effect_size_generator(max_alpha, reps,
                                            n_species_class1=n_diff,
                                            n_species_class2=n_diff,
                                            n_species_shared=n_species-2*n_diff,
-                                           effect_size=a,
+                                           effect_size=a_,
                                            n_contaminants=n_contaminants, lam=lam,
                                            library_size=library_size, template=template)
 
@@ -449,7 +449,7 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
                                                     n_species_class1=a_,
                                                     n_species_class2=0,
                                                     n_species_shared=n_species - a_,
-                                                    effect_size=a,
+                                                    effect_size=fold_change,
                                                     n_contaminants=n_contaminants, lam=lam,
                                                     template=template)
             else:
@@ -466,7 +466,7 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
                                                     n_species_class1=a_,
                                                     n_species_class2=a_,
                                                     n_species_shared=n_species-2*a_,
-                                                    effect_size=a,
+                                                    effect_size=fold_change,
                                                     n_contaminants=n_contaminants, lam=lam,
                                                     template=template)
             else:

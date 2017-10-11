@@ -225,11 +225,12 @@ def compositional_variable_features(max_changing, fold_change, reps,
         template = templ.data(id=template_sample_name, axis='sample')
     else:
         template = None
+
     gen = compositional_variable_features_generator(
-        max_changing, fold_change, reps,
-        asymmetry=asymmetry, fold_balance=fold_balance,
-        intervals, n_species, asymmetry,
-        n_contaminants, lam, template
+        max_changing=max_changing, fold_change=fold_change,
+        reps=reps, intervals=intervals, n_species=n_species,
+        n_contaminants=n_contaminants, lam=lam, template=template,
+        asymmetry=asymmetry, fold_balance=fold_balance
     )
 
     os.mkdir(output_dir)
