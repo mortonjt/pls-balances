@@ -53,12 +53,12 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
         for _ in range(reps):
             data.append([effect_size]*n_species_class1 +
                         [1]*(n_species_class2+n_species_shared))
-        metadata += [0]
+            metadata += [0]
 
         for _ in range(reps):
             data.append([1]*(n_species_class1+n_species_shared) +
                         [effect_size]*n_species_class2)
-        metadata += [1]
+            metadata += [1]
 
     else:
         # randomly shuffle template
