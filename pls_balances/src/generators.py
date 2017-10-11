@@ -258,27 +258,31 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
     n_species = n_species_class1 + n_species_class2 + n_species_shared
 
     if template is None:
-      for _ in range(reps):
-          data.append([1]*(n_species))
-          metadata += [0]
 
-      for _ in range(reps):
-          ary = [1/effect_size]*n_species_class1 + \
-                [1]*(n_species_shared) + \
-                [effect_size]*n_species_class2
-          data.append(ary)
-          metadata += [1]
+        for _ in range(reps):
+            data.append([1]*(n_species))
+            metadata += [0]
+
+        for _ in range(reps):
+            ary = [1/effect_size]*n_species_class1 + \
+                  [1]*(n_species_shared) + \
+                  [effect_size]*n_species_class2
+            data.append(ary)
+            metadata += [1]
     else:
-      for _ in range(reps):
-          data.append(template[:(n_species)])
-          metadata += [0]
+        # randomly shuffle template
+        template = np.random.permutation(template)
 
-      for _ in range(reps):
-          data.append(
-              np.concatenate(((1/effect_size)*template[:(n_species_class1)],
-              template[(n_species_class1):(n_species_class2+n_species_shared)],
-              effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
-          metadata += [1]
+        for _ in range(reps):
+            data.append(template[:(n_species)])
+            metadata += [0]
+
+        for _ in range(reps):
+            data.append(
+                np.concatenate(((1/effect_size)*template[:(n_species_class1)],
+                                template[(n_species_class1):(n_species_class2+n_species_shared)],
+                                effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
+            metadata += [1]
 
     data = closure(np.vstack(data))
     x = np.linspace(0, 1, n_contaminants)
