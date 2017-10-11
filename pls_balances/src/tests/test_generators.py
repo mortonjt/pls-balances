@@ -309,6 +309,61 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_truth = ['F0', 'F1', 'F3', 'F4']
         self.assertListEqual(truth, exp_truth)
 
+    def test_composition_variable_features_balanced(self):
+        gen = compositional_variable_features_generator(
+            max_changing=2, fold_change=2, reps=5,
+            intervals=2, n_species=5,
+            fold_balance=True,
+            n_contaminants=2, lam=0.1)
+
+        table, metadata, truth = next(gen)
+        table, metadata, truth = next(gen)
+
+        exp_table = pd.DataFrame(
+            [[0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023]],
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4', 'X0', 'X1']
+        )
+
+        npt.assert_allclose(table.values, exp_table.values, atol=1e-3, rtol=1e-3)
+
+        exp_metadata = pd.DataFrame(
+            {'group': np.array([0.] * 5 + [1.] * 5).astype(np.int),
+             'n_diff': np.array([4] * 10).astype(np.int),
+             'effect_size': [2.] * 10,
+             'library_size': np.array([10000] * 10).astype(np.int)
+            },
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+        )
+
+        metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
+        exp_metadata = exp_metadata.reindex_axis(sorted(exp_metadata.columns), axis=1)
+        pdt.assert_frame_equal(metadata, exp_metadata)
+
+        exp_truth = ['F0', 'F1', 'F3', 'F4']
+        self.assertListEqual(truth, exp_truth)
+
     def test_composition_asymmetric_variable_features(self):
         gen = compositional_variable_features_generator(
             max_changing=2, fold_change=2, reps=5,
