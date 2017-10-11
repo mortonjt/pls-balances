@@ -18,7 +18,7 @@ before_install:
 install:
   - conda create --yes -n test_env python=$PYVERSION
   - source activate test_env
-  - conda install --yes -c biocore scipy numpy pandas scikit-learn scikit-bio click biom-format nose matplotlib seaborn nose ipython
+  - conda install --yes -c biocore scipy numpy pandas scikit-learn scikit-bio click biom-format nose matplotlib seaborn nose ipython cython
   - python setup.py install
 script:
   - nosetests .
