@@ -18,6 +18,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
 
         gen = compositional_effect_size_generator(max_alpha=1, reps=5,
                                                   intervals=2, n_species=5, n_diff=1,
+                                                  fold_balance=False,
                                                   n_contaminants=2, lam=0.1)
         table, metadata, truth = next(gen)
 
@@ -114,6 +115,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
             max_alpha=1, reps=5,
             intervals=2, n_species=5, n_diff=1,
             n_contaminants=2, lam=0.1,
+            fold_balance=False,
             template=np.array([7.0, 3.0, 1.0, 1.0, 2.0, 4.0, 6.0, 1.0, 10.0]))
         table, metadata, truth = next(gen)
         table, metadata, truth = next(gen)
@@ -204,7 +206,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         gen = compositional_effect_size_generator(max_alpha=1, reps=5,
                                                   intervals=2, n_species=5, n_diff=1,
                                                   n_contaminants=2, lam=0.1,
-                                                  balanced=False, template=None)
+                                                  fold_balance=True, template=None)
         table, metadata, truth = next(gen)
         table, metadata, truth = next(gen)
 
@@ -253,6 +255,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         gen = compositional_variable_features_generator(
             max_changing=2, fold_change=2, reps=5,
             intervals=2, n_species=5,
+            fold_balance=False,
             n_contaminants=2, lam=0.1)
 
         table, metadata, truth = next(gen)
@@ -310,6 +313,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         gen = compositional_variable_features_generator(
             max_changing=2, fold_change=2, reps=5,
             intervals=2, n_species=5, asymmetry=True,
+            fold_balance=False,
             n_contaminants=2, lam=0.1)
 
         table, metadata, truth = next(gen)
