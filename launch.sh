@@ -1,3 +1,11 @@
+generate.py compositional_effect_size \
+    --max-alpha 10 --reps 10 --intervals 3 \
+    --n-species 10 --n-diff 5 \
+    --n-contaminants 3 --lam 0.1 \
+    --balanced False \
+    --template-biom pls_balances/data/globalpatterns/globalpatterns.biom \
+    --template-sample-name 'CL3' \
+    --output-dir small_test
 
 # generate.py compositional_regression_prefilter \
 #     --max-gradient 10 \
@@ -18,6 +26,7 @@
 #     --max-beta 1 \
 #     --beta-intervals 3 \
 #     --output-dir pls_balances/results/effect_size_regression_benchmarks_test
+# 
 # 
 # generate.py compositional_effect_size \
 #     --max-alpha 10 --reps 10 --intervals 3 \

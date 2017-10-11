@@ -59,8 +59,14 @@ def noisify(table_file, metadata_file,
         multinomial_sample(table_, depths=metadata['library_size']))
     table_.index = table.index
     table_.columns = list(table.columns)
+
+
+    metadata['observed'] = np.sum(table_.sum(axis=0) > 0)
+    metadata['unobserved'] = np.sum(table_.sum(axis=0)== 0)
+    metadata.to_csv(metadata_file, sep='\t')
+
     # drop zeros -- they are not informative
-    table_ = table_.loc[:, table_.sum(axis=0) > 0]    
+    table_ = table_.loc[:, table_.sum(axis=0) > 0]
     t = Table(table_.T.values, table_.columns.values, table_.index.values)
     with biom_open(output_file, 'w') as f:
         t.to_hdf5(f, generated_by='moi')
@@ -96,7 +102,8 @@ def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, n_diff,
                               n_contaminants, lam,
                               library_size,
-                              balanced, template_biom,
+                              balanced,
+                              template_biom,
                               template_sample_name,
                               output_dir):
     templ = load_table(template_biom)
@@ -181,26 +188,34 @@ def library_size_difference(effect_size, reps, intervals,
 @click.option('--n-species', default=100,
               help='Number of species')
 @click.option('--asymmetry', is_flag=True, default=False,
-              help='Fold-change applied to max-changing species in both sample groups = False')
+              help=('Fold-change applied to max-changing species in both '
+                    'sample groups = False'))
 @click.option('--n-contaminants', default=100,
               help='Number of species')
 @click.option('--lam', default=0.1,
               help='Scale factor for exponential contamination urn.')
-@click.option('--template', default=None, is_flag=False,
-              help='Specifies if a template (specified number or proportion array) '
-              'should be used (np.array) or not (None)')
+@click.option('--template-biom', default=None,
+              help='Template biom file path.')
+@click.option('--template-sample-name', default=None,
+              help='Template sample name.')
 @click.option('--output-dir',
               help='output directory')
 def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
                                     asymmetry, n_contaminants,
-                                    lam, template, output_dir):
+                                    lam,
+                                    template_biom,
+                                    template_sample_name,
+                                    output_dir):
+    templ = load_table(template_biom)
+    template = templ.data(id=template_sample_name, axis='sample')
 
     gen = compositional_variable_features_generator(
         max_changing, fold_change, reps,
         intervals, n_species, asymmetry,
         n_contaminants, lam, template
     )
+
     os.mkdir(output_dir)
     for i, g in enumerate(gen):
         table, groups, truth = g

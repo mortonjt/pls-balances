@@ -53,12 +53,12 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
         for _ in range(reps):
             data.append([effect_size]*n_species_class1 +
                         [1]*(n_species_class2+n_species_shared))
-        metadata += [0]
+            metadata += [0]
 
         for _ in range(reps):
             data.append([1]*(n_species_class1+n_species_shared) +
                         [effect_size]*n_species_class2)
-        metadata += [1]
+            metadata += [1]
 
     else:
         # randomly shuffle template
@@ -359,7 +359,8 @@ def compositional_effect_size_generator(max_alpha, reps,
                                                 n_species_class2=n_diff,
                                                 n_species_shared=n_species-2*n_diff,
                                                 effect_size=a,
-                                                n_contaminants=n_contaminants, lam=lam, template=template)
+                                                n_contaminants=n_contaminants, lam=lam,
+                                                template=template)
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,
                                               intervals, n_species, asymmetry=False,
@@ -646,8 +647,6 @@ def library_size_difference_generator(
             n_species_shared=n_species-2*n_diff,
             effect_size=effect_size,
             library_size=library_sizes)
-
-
 
 
 def missing_at_random_generator():
