@@ -1,7 +1,6 @@
 benchmark: 'n_diff'
 category: 'group'
-output_dir: 'pls_balances/results/variable_features_benchmarks_round_countrol/'
-# output_dir: 'pls_balances/results/variable_features_benchmarks_test/'
+output_dir: 'pls_balances/results/variable_features_benchmarks_round10/'
 intervals: 20
 sigma: 1
 tools:

@@ -60,7 +60,6 @@ def noisify(table_file, metadata_file,
     table_.index = table.index
     table_.columns = list(table.columns)
 
-
     metadata['observed'] = np.sum(table_.sum(axis=0) > 0)
     metadata['unobserved'] = np.sum(table_.sum(axis=0)== 0)
     metadata.to_csv(metadata_file, sep='\t')
@@ -89,9 +88,9 @@ def noisify(table_file, metadata_file,
               help='Scale factor for exponential contamination urn.')
 @click.option('--library-size', default=0.1,
               help='Library size (i.e. sequencing depth)..')
-@click.option('--balanced', default=False,
-              help='Specifies if effect size should be symetric (True) '
-              'or assymetric (False)')
+@click.option('--asymmetry', is_flag=True, default=False,
+              help=('Fold-change applied to max-changing species in both '
+                    'sample groups = False'))
 @click.option('--template-biom', default=None,
               help='Template biom file path.')
 @click.option('--template-sample-name', default=None,
@@ -102,7 +101,7 @@ def compositional_effect_size(max_alpha, reps, intervals,
                               n_species, n_diff,
                               n_contaminants, lam,
                               library_size,
-                              balanced,
+                              asymmetry,
                               template_biom,
                               template_sample_name,
                               output_dir):
@@ -115,7 +114,7 @@ def compositional_effect_size(max_alpha, reps, intervals,
     gen = compositional_effect_size_generator(
         max_alpha, reps, intervals, n_species, n_diff,
         n_contaminants, lam, library_size=library_size,
-        balanced=balanced, template=template
+        balanced=asymmetry, template=template
     )
 
     for i, g in enumerate(gen):
