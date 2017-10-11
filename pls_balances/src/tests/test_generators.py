@@ -43,7 +43,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_metadata = pd.DataFrame(
             {'group': [0] * 5 + [1] * 5,
              'n_diff': [2] * 10,
-             'effect_size': [1.0] * 10,
+             'effect_size': [1] * 10,
              'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
@@ -93,7 +93,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_metadata = pd.DataFrame(
             {'group': [0] * 5 + [1] * 5,
              'n_diff': [2] * 10,
-             'effect_size': [10.0] * 10,
+             'effect_size': [10] * 10,
              'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
@@ -238,7 +238,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_metadata = pd.DataFrame(
             {'group': [0] * 5 + [1] * 5,
              'n_diff': [2] * 10,
-             'effect_size': [10.0] * 10,
+             'effect_size': [10] * 10,
              'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
@@ -348,10 +348,10 @@ class TestCompositionalEffectSize(unittest.TestCase):
         npt.assert_allclose(table.values, exp_table.values, atol=1e-3, rtol=1e-3)
 
         exp_metadata = pd.DataFrame(
-            {'group': np.array([0.] * 5 + [1.] * 5).astype(np.int),
-             'n_diff': np.array([4] * 10).astype(np.int),
-             'effect_size': [2.] * 10,
-             'library_size': np.array([10000] * 10).astype(np.int)
+            {'group': [0] * 5 + [1] * 5,
+             'n_diff': [4] * 10,
+             'effect_size': [2] * 10,
+             'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
                      'S5', 'S6', 'S7', 'S8', 'S9'],
@@ -359,6 +359,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
 
         metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
         exp_metadata = exp_metadata.reindex_axis(sorted(exp_metadata.columns), axis=1)
+
         pdt.assert_frame_equal(metadata, exp_metadata)
 
         exp_truth = ['F0', 'F1', 'F3', 'F4']
