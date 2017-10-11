@@ -87,7 +87,7 @@ def noisify(table_file, metadata_file,
               help='Number of species')
 @click.option('--lam', default=0.1,
               help='Scale factor for exponential contamination urn.')
-@click.option('--library-size', default=0.1,
+@click.option('--library-size', default=10000,
               help='Library size (i.e. sequencing depth)..')
 @click.option('--asymmetry', is_flag=True, default=False,
               help=('Fold-change applied to max-changing species in both '
@@ -195,6 +195,8 @@ def library_size_difference(effect_size, reps, intervals,
               help='Number of effect size benchmarks to test.')
 @click.option('--n-species', default=100,
               help='Number of species')
+@click.option('--library-size', default=10000,
+              help='Library size (i.e. sequencing depth)..')
 @click.option('--asymmetry', is_flag=True, default=False,
               help=('Fold-change applied to max-changing species in both '
                     'sample groups = False'))
@@ -214,6 +216,7 @@ def library_size_difference(effect_size, reps, intervals,
               help='output directory')
 def compositional_variable_features(max_changing, fold_change, reps,
                                     intervals, n_species,
+                                    library_size,
                                     asymmetry, fold_balance,
                                     n_contaminants, lam,
                                     template_biom,
@@ -228,6 +231,7 @@ def compositional_variable_features(max_changing, fold_change, reps,
 
     gen = compositional_variable_features_generator(
         max_changing=max_changing, fold_change=fold_change,
+        library_size=library_size,
         reps=reps, intervals=intervals, n_species=n_species,
         n_contaminants=n_contaminants, lam=lam, template=template,
         asymmetry=asymmetry, fold_balance=fold_balance
