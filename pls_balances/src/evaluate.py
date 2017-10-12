@@ -49,7 +49,9 @@ def compute_confusion_matrices(table_files, result_files,
              col_names[FN]: len(truth - hits),
              col_names[TN]: len((ids-hits) & (ids-truth))
             })
-        stats.loc[tab_file] = x
+
+        stats.loc[tab_file, :] = x
+
     stats.to_csv(output_file, sep='\t')
 
 

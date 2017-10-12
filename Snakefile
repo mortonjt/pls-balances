@@ -65,11 +65,11 @@ rule run_tool:
 rule summarize:
     input:
         tables = expand(output_dir + "table.noisy.{sample}.biom",
-                        sample=SAMPLES, replicate=REPLICATES),
+                        sample=SAMPLES),
         results = expand(output_dir + "{tool}.{sample}.results",
-                         tool=TOOLS, sample=SAMPLES, replicate=REPLICATES),
+                         tool=TOOLS, sample=SAMPLES),
         truths = expand(output_dir + "truth.{sample}.csv",
-                        sample=SAMPLES, replicate=REPLICATES)
+                        sample=SAMPLES)
     output:
         output_dir + "{tool}.summary"
     run:
@@ -81,9 +81,9 @@ rule aggregate_summaries:
     input:
         summaries = expand(output_dir + "{tool}.summary", tool=TOOLS),
         metadata = expand(output_dir + "metadata.{sample}.txt",
-                          sample=SAMPLES, replicate=REPLICATES),
+                          sample=SAMPLES),
         tables = expand(output_dir + "table.noisy.{sample}.biom",
-                        sample=SAMPLES, replicate=REPLICATES),
+                        sample=SAMPLES),
     output:
         output_dir + "confusion_matrix.summary"
     run:
