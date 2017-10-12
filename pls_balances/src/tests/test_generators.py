@@ -18,6 +18,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
 
         gen = compositional_effect_size_generator(max_alpha=1, reps=5,
                                                   intervals=2, n_species=5, n_diff=1,
+                                                  fold_balance=False,
                                                   n_contaminants=2, lam=0.1)
         table, metadata, truth = next(gen)
 
@@ -42,7 +43,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_metadata = pd.DataFrame(
             {'group': [0] * 5 + [1] * 5,
              'n_diff': [2] * 10,
-             'effect_size': [1.0] * 10,
+             'effect_size': [1] * 10,
              'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
@@ -92,7 +93,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_metadata = pd.DataFrame(
             {'group': [0] * 5 + [1] * 5,
              'n_diff': [2] * 10,
-             'effect_size': [10.0] * 10,
+             'effect_size': [10] * 10,
              'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
@@ -114,6 +115,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
             max_alpha=1, reps=5,
             intervals=2, n_species=5, n_diff=1,
             n_contaminants=2, lam=0.1,
+            fold_balance=False,
             template=np.array([7.0, 3.0, 1.0, 1.0, 2.0, 4.0, 6.0, 1.0, 10.0]))
         table, metadata, truth = next(gen)
         table, metadata, truth = next(gen)
@@ -204,7 +206,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         gen = compositional_effect_size_generator(max_alpha=1, reps=5,
                                                   intervals=2, n_species=5, n_diff=1,
                                                   n_contaminants=2, lam=0.1,
-                                                  balanced=False, template=None)
+                                                  fold_balance=True, template=None)
         table, metadata, truth = next(gen)
         table, metadata, truth = next(gen)
 
@@ -236,7 +238,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_metadata = pd.DataFrame(
             {'group': [0] * 5 + [1] * 5,
              'n_diff': [2] * 10,
-             'effect_size': [10.0] * 10,
+             'effect_size': [10] * 10,
              'library_size': [10000] * 10
             },
             index = ['S0', 'S1', 'S2', 'S3', 'S4',
@@ -253,6 +255,7 @@ class TestCompositionalEffectSize(unittest.TestCase):
         gen = compositional_variable_features_generator(
             max_changing=2, fold_change=2, reps=5,
             intervals=2, n_species=5,
+            fold_balance=False,
             n_contaminants=2, lam=0.1)
 
         table, metadata, truth = next(gen)
@@ -306,10 +309,126 @@ class TestCompositionalEffectSize(unittest.TestCase):
         exp_truth = ['F0', 'F1', 'F3', 'F4']
         self.assertListEqual(truth, exp_truth)
 
+    def test_composition_variable_features_template(self):
+        # test template
+        np.random.seed(0)
+
+        gen = compositional_variable_features_generator(
+            max_changing=2, fold_change=2, reps=5,
+            intervals=2, n_species=5,
+            fold_balance=False,
+            n_contaminants=2, lam=0.1,
+            template=np.array([7.0, 3.0, 1.0, 1.0, 2.0, 4.0, 6.0, 1.0, 10.0]))
+
+        table, metadata, truth = next(gen)
+        table, metadata, truth = next(gen)
+
+        exp_table = pd.DataFrame([
+            [0.062500, 0.125000, 0.031250, 0.109375,
+             0.171875, 0.499977, 0.000023],
+            [0.062500, 0.125000, 0.031250, 0.109375,
+             0.171875, 0.499977, 0.000023],
+            [0.062500, 0.125000, 0.031250, 0.109375,
+             0.171875, 0.499977, 0.000023],
+            [0.062500, 0.125000, 0.031250, 0.109375,
+             0.171875, 0.499977, 0.000023],
+            [0.062500, 0.125000, 0.031250, 0.109375,
+             0.171875, 0.499977, 0.000023],
+            [0.022727, 0.045455, 0.022727, 0.159091,
+             0.250000, 0.499977, 0.000023],
+            [0.022727, 0.045455, 0.022727, 0.159091,
+             0.250000, 0.499977, 0.000023],
+            [0.022727, 0.045455, 0.022727, 0.159091,
+             0.250000, 0.499977, 0.000023],
+            [0.022727, 0.045455, 0.022727, 0.159091,
+             0.250000, 0.499977, 0.000023],
+            [0.022727, 0.045455, 0.022727, 0.159091,
+             0.250000, 0.499977, 0.000023]],
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4', 'X0', 'X1']
+        )
+
+        npt.assert_allclose(table.values, exp_table.values, atol=1e-3, rtol=1e-3)
+
+        exp_metadata = pd.DataFrame(
+            {'group': [0] * 5 + [1] * 5,
+             'n_diff': [4] * 10,
+             'effect_size': [2] * 10,
+             'library_size': [10000] * 10
+            },
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+        )
+
+        metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
+        exp_metadata = exp_metadata.reindex_axis(sorted(exp_metadata.columns), axis=1)
+        pdt.assert_frame_equal(metadata, exp_metadata)
+
+        exp_truth = ['F0', 'F1', 'F3', 'F4']
+        self.assertListEqual(truth, exp_truth)
+
+    def test_composition_variable_features_balanced(self):
+        gen = compositional_variable_features_generator(
+            max_changing=2, fold_change=2, reps=5,
+            intervals=2, n_species=5,
+            fold_balance=True,
+            n_contaminants=2, lam=0.1)
+
+        table, metadata, truth = next(gen)
+        table, metadata, truth = next(gen)
+
+        exp_table = pd.DataFrame(
+            [[0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.100000, 0.100000, 0.100000, 0.100000,
+              0.100000, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023],
+             [0.041667, 0.041667, 0.083333, 0.166667,
+              0.166667, 0.499977, 0.000023]],
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+            columns = ['F0', 'F1', 'F2', 'F3', 'F4', 'X0', 'X1']
+        )
+
+        npt.assert_allclose(table.values, exp_table.values, atol=1e-3, rtol=1e-3)
+
+        exp_metadata = pd.DataFrame(
+            {'group': [0] * 5 + [1] * 5,
+             'n_diff': [4] * 10,
+             'effect_size': [2] * 10,
+             'library_size': [10000] * 10
+            },
+            index = ['S0', 'S1', 'S2', 'S3', 'S4',
+                     'S5', 'S6', 'S7', 'S8', 'S9'],
+        )
+
+        metadata = metadata.reindex_axis(sorted(metadata.columns), axis=1)
+        exp_metadata = exp_metadata.reindex_axis(sorted(exp_metadata.columns), axis=1)
+
+        pdt.assert_frame_equal(metadata, exp_metadata)
+
+        exp_truth = ['F0', 'F1', 'F3', 'F4']
+        self.assertListEqual(truth, exp_truth)
+
     def test_composition_asymmetric_variable_features(self):
         gen = compositional_variable_features_generator(
             max_changing=2, fold_change=2, reps=5,
             intervals=2, n_species=5, asymmetry=True,
+            fold_balance=False,
             n_contaminants=2, lam=0.1)
 
         table, metadata, truth = next(gen)

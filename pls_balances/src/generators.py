@@ -258,27 +258,31 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
     n_species = n_species_class1 + n_species_class2 + n_species_shared
 
     if template is None:
-      for _ in range(reps):
-          data.append([1]*(n_species))
-          metadata += [0]
 
-      for _ in range(reps):
-          data.append(
-              [1/effect_size]*n_species_class1 +
-              [1]*(n_species_shared) +
-              [effect_size]*n_species_class2)
-          metadata += [1]
+        for _ in range(reps):
+            data.append([1]*(n_species))
+            metadata += [0]
+
+        for _ in range(reps):
+            ary = [1/effect_size]*n_species_class1 + \
+                  [1]*(n_species_shared) + \
+                  [effect_size]*n_species_class2
+            data.append(ary)
+            metadata += [1]
     else:
-      for _ in range(reps):
-          data.append(template[:(n_species)])
-          metadata += [0]
+        # randomly shuffle template
+        template = np.random.permutation(template)
 
-      for _ in range(reps):
-          data.append(
-              np.concatenate(((1/effect_size)*template[:(n_species_class1)],
-              template[(n_species_class1):(n_species_class2+n_species_shared)],
-              effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
-          metadata += [1]
+        for _ in range(reps):
+            data.append(template[:(n_species)])
+            metadata += [0]
+
+        for _ in range(reps):
+            data.append(
+                np.concatenate(((1/effect_size)*template[:(n_species_class1)],
+                                template[(n_species_class1):(n_species_class2+n_species_shared)],
+                                effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
+            metadata += [1]
 
     data = closure(np.vstack(data))
     x = np.linspace(0, 1, n_contaminants)
@@ -309,7 +313,8 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
 def compositional_effect_size_generator(max_alpha, reps,
                                         intervals, n_species, n_diff,
                                         n_contaminants=2, lam=0.1,
-                                        library_size=10000, balanced=True, template=None):
+                                        library_size=10000, asymmetry=False,
+                                        fold_balance=True, template=None):
     """ Generates tables where the effect size changes.
 
     Parameters
@@ -326,12 +331,22 @@ def compositional_effect_size_generator(max_alpha, reps,
     n_diff : int
         Number of differentially abundant species in each group.
     n_contaminants : int
-       Number of contaminant species.
+        Number of contaminant species.
+    asymmetry : bool
+        Fold change applied to max_changing species in both
+        Groups 1 and 2 (False). Fold change applied to max_changing species
+        in Group 1 only (True). default=False
+    fold_balance: bool
+        Positive fold change applied to half of the max_changing species
+        according to `assymetry`, while negative fold change is applied to
+        the other half of the max_changing species. default=True
+    library_size:
+        Number of reads to draw from each sample. default=10000.
     lam : float
-       Decay constant for contaminant urn (assumes that the contaminant urn
-       follows an exponential distribution).
+        Decay constant for contaminant urn (assumes that the contaminant urn
+        follows an exponential distribution).
     template : np.array
-        A vector specifying feature abundances or relative proportions.
+         A vector specifying feature abundances or relative proportions.
 
     Returns
     -------
@@ -344,27 +359,48 @@ def compositional_effect_size_generator(max_alpha, reps,
            Species actually differentially abundant.
     """
     for a in np.logspace(0, max_alpha, intervals):
-
-        if balanced:
-            yield generate_block_table(reps,
-                                       n_species_class1=n_diff,
-                                       n_species_class2=n_diff,
-                                       n_species_shared=n_species-2*n_diff,
-                                       effect_size=a,
-                                       n_contaminants=n_contaminants, lam=lam,
-                                       library_size=library_size, template=template)
+        a_ = int(a)
+        if asymmetry:
+            if fold_balance:
+                yield generate_balanced_block_table(reps,
+                                                    n_species_class1=n_diff,
+                                                    n_species_class2=0,
+                                                    n_species_shared=n_species-n_diff,
+                                                    effect_size=a_,
+                                                    n_contaminants=n_contaminants, lam=lam,
+                                                    template=template)
+            else:
+                yield generate_block_table(reps,
+                                           n_species_class1=n_diff,
+                                           n_species_class2=0,
+                                           n_species_shared=n_species-n_diff,
+                                           effect_size=a_,
+                                           n_contaminants=n_contaminants, lam=lam,
+                                           library_size=library_size, template=template)
         else:
-            yield generate_balanced_block_table(reps,
-                                                n_species_class1=n_diff,
-                                                n_species_class2=n_diff,
-                                                n_species_shared=n_species-2*n_diff,
-                                                effect_size=a,
-                                                n_contaminants=n_contaminants, lam=lam,
-                                                template=template)
+            if fold_balance:
+                yield generate_balanced_block_table(reps,
+                                                    n_species_class1=n_diff,
+                                                    n_species_class2=n_diff,
+                                                    n_species_shared=n_species-2*n_diff,
+                                                    effect_size=a_,
+                                                    n_contaminants=n_contaminants, lam=lam,
+                                                    template=template)
+            else:
+                yield generate_block_table(reps,
+                                           n_species_class1=n_diff,
+                                           n_species_class2=n_diff,
+                                           n_species_shared=n_species-2*n_diff,
+                                           effect_size=a_,
+                                           n_contaminants=n_contaminants, lam=lam,
+                                           library_size=library_size, template=template)
+
 
 def compositional_variable_features_generator(max_changing, fold_change, reps,
                                               intervals, n_species, asymmetry=False,
-                                              n_contaminants=2, lam=0.1, template=None):
+                                              fold_balance=True, library_size=10000,
+                                              n_contaminants=2, lam=0.1,
+                                              template=None):
     """ Generates tables where the number of changing features changes.
 
     Parameters
@@ -381,8 +417,15 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
     n_species : int
         Number of species.
     asymmetry : bool
-        Fold change applied to max_changing species in both Groups 1 and 2 (False).
-        Fold change applied to max_changing species in Group 1 only (True).
+        Fold change applied to max_changing species in both
+        Groups 1 and 2 (False). Fold change applied to max_changing species
+        in Group 1 only (True).
+    fold_balance: bool
+        Positive fold change applied to half of the max_changing species
+        according to `assymetry`, while negative fold change is applied to
+        the other half of the max_changing species.
+    library_size:
+        Number of reads to draw from each sample. default=10000.
     n_contaminants : int
        Number of contaminant species.
     lam : float
@@ -404,22 +447,40 @@ def compositional_variable_features_generator(max_changing, fold_change, reps,
     """
     for a in np.linspace(0, max_changing, intervals):
         a_ = int(a)
-        if asymmetry == False:
-          yield generate_block_table(reps,
-                                     n_species_class1=a_,
-                                     n_species_class2=a_,
-                                     n_species_shared=n_species - 2*a_,
-                                     effect_size=fold_change,
-                                     n_contaminants=n_contaminants, lam=lam,
-                                     template=template)
+        if asymmetry:
+            if fold_balance:
+                yield generate_balanced_block_table(reps,
+                                                    n_species_class1=a_,
+                                                    n_species_class2=0,
+                                                    n_species_shared=n_species - a_,
+                                                    effect_size=fold_change,
+                                                    n_contaminants=n_contaminants, lam=lam,
+                                                    template=template)
+            else:
+                yield generate_block_table(reps,
+                                           n_species_class1=a_,
+                                           n_species_class2=0,
+                                           n_species_shared=n_species - a_,
+                                           effect_size=fold_change,
+                                           n_contaminants=n_contaminants, lam=lam,
+                                           template=template)
         else:
-          yield generate_block_table(reps,
-                                     n_species_class1=a_,
-                                     n_species_class2=0,
-                                     n_species_shared=n_species - a_,
-                                     effect_size=fold_change,
-                                     n_contaminants=n_contaminants, lam=lam,
-                                     template=template)
+            if fold_balance:
+                yield generate_balanced_block_table(reps,
+                                                    n_species_class1=a_,
+                                                    n_species_class2=a_,
+                                                    n_species_shared=n_species-2*a_,
+                                                    effect_size=fold_change,
+                                                    n_contaminants=n_contaminants, lam=lam,
+                                                    template=template)
+            else:
+                yield generate_block_table(reps,
+                                           n_species_class1=a_,
+                                           n_species_class2=a_,
+                                           n_species_shared=n_species - 2*a_,
+                                           effect_size=fold_change,
+                                           n_contaminants=n_contaminants, lam=lam,
+                                           template=template)
 
 
 def generate_band_table(mu, sigma, gradient, n_species,
