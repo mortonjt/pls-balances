@@ -1,6 +1,7 @@
 import os
 import tempfile
 import numpy as np
+from itertools import product
 
 # lam = 0.1
 # category = 'n_diff'
@@ -13,6 +14,7 @@ category = config['category']
 benchmark = config['benchmark']
 output_dir = config['output_dir']
 intervals = config['intervals']
+reps = config['reps']
 sigma = config['sigma']
 
 # lam = 0.1
@@ -20,12 +22,12 @@ sigma = config['sigma']
 # output_dir = 'pls_balances/results/variable_features_benchmarks/'
 # n_contaminants = 10
 # intervals = 3
-
-
+choice = 'abcdefghijklmnopqrstuvwxyz'
+REPLICATES = list(choice[:reps])
 SAMPLES = np.arange(intervals).astype(np.str)
+SAMPLES = list(map(lambda x: '%s_%s' % x, product(SAMPLES, REPLICATES)))
 TOOLS = config['tools']
 #TOOLS = ['ancom', 'pls_balances', 't_test', 'mann_whitney']
-
 
 rule all:
     input:
@@ -62,10 +64,12 @@ rule run_tool:
 
 rule summarize:
     input:
-        tables = expand(output_dir + "table.noisy.{sample}.biom", sample=SAMPLES),
+        tables = expand(output_dir + "table.noisy.{sample}.biom",
+                        sample=SAMPLES, replicate=REPLICATES),
         results = expand(output_dir + "{tool}.{sample}.results",
-                         tool=TOOLS, sample=SAMPLES),
-        truths = expand(output_dir + "truth.{sample}.csv", sample=SAMPLES)
+                         tool=TOOLS, sample=SAMPLES, replicate=REPLICATES),
+        truths = expand(output_dir + "truth.{sample}.csv",
+                        sample=SAMPLES, replicate=REPLICATES)
     output:
         output_dir + "{tool}.summary"
     run:
@@ -76,8 +80,10 @@ rule summarize:
 rule aggregate_summaries:
     input:
         summaries = expand(output_dir + "{tool}.summary", tool=TOOLS),
-        metadata = expand(output_dir + "metadata.{sample}.txt", sample=SAMPLES),
-        tables = expand(output_dir + "table.noisy.{sample}.biom", sample=SAMPLES),
+        metadata = expand(output_dir + "metadata.{sample}.txt",
+                          sample=SAMPLES, replicate=REPLICATES),
+        tables = expand(output_dir + "table.noisy.{sample}.biom",
+                        sample=SAMPLES, replicate=REPLICATES),
     output:
         output_dir + "confusion_matrix.summary"
     run:
