@@ -113,6 +113,7 @@ def generate_block_table(reps, n_species_class1, n_species_class2,
                       list(s_ids[-n_species_class2:]))
     else:
       ground_truth = (list(s_ids[:n_species_class1]))
+
     return table, metadata, ground_truth
 
 
@@ -257,6 +258,7 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
     n_species = n_species_class1 + n_species_class2 + n_species_shared
 
     if template is None:
+<<<<<<< HEAD
 
         for _ in range(reps):
             data.append([1]*(n_species))
@@ -268,6 +270,18 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
                   [effect_size]*n_species_class2
             data.append(ary)
             metadata += [1]
+=======
+      for _ in range(reps):
+          data.append([1]*(n_species))
+          metadata += [0]
+
+      for _ in range(reps):
+          ary = [1/effect_size]*n_species_class1 + \
+                [1]*(n_species_shared) + \
+                [effect_size]*n_species_class2
+          data.append(ary)
+          metadata += [1]
+>>>>>>> e982e072f144fd6c943617a6312e4e1b26afdef1
     else:
         # randomly shuffle template
         template = np.random.permutation(template)

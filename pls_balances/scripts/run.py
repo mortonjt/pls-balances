@@ -8,7 +8,7 @@ from skbio.stats.composition import (clr, centralize,
 from sklearn.cross_decomposition import PLSRegression
 from pls_balances.src.balances import round_balance
 from statsmodels.sandbox.stats.multicomp import multipletests
-from scipy.stats import ttest_ind, mannwhitneyu, pearsonr, spearmanr
+from scipy.stats import ttest_ind, mannwhitneyu, pearsonr, spearmanr, dirichlet
 from sklearn import linear_model
 from sklearn.ensemble import RandomForestRegressor
 import tempfile
@@ -32,33 +32,40 @@ def run():
 def pls_balances_cmd(table_file, metadata_file, category, output_file):
     metadata = pd.read_table(metadata_file, index_col=0)
     table = load_table(table_file)
+
     table = pd.DataFrame(np.array(table.matrix_data.todense()).T,
                          index=table.ids(axis='sample'),
                          columns=table.ids(axis='observation'))
 
-    ctable = pd.DataFrame(clr(centralize(table+1)),
-                      index=table.index, columns=table.columns)
 
-    rfc = PLSRegression(n_components=1)
-    if metadata[category].dtype != np.float:
+    bootstraps = 100
+    ls, rs, fs = [], [], []
+    nums, denoms = set(table.columns), set(table.columns)
+    for _ in range(bootstraps):
+        _table = table.apply(lambda x: dirichlet.rvs(x+1).ravel(), axis=1)
+
+        ctable = pd.DataFrame(clr(centralize(table+1)),
+                              index=table.index, columns=table.columns)
+
+        rfc = PLSRegression(n_components=1)
         cats = np.unique(metadata[category])
         groups = (metadata[category] == cats[0]).astype(np.int)
-    else:
-        groups = metadata[category]
 
-    rfc.fit(X=ctable.values, Y=groups)
+        rfc.fit(X=ctable.values, Y=groups)
 
-    pls_df = pd.DataFrame(rfc.x_weights_,
-                          index=ctable.columns, columns=['PLS1'])
-    l, r = round_balance(pls_df.values,
-                         means_init=[[pls_df.PLS1.min()],
-                                     [0],
-                                     [pls_df.PLS1.max()]],
-                         n_init=100)
-    num = pls_df.loc[pls_df.PLS1 > r]
-    denom = pls_df.loc[pls_df.PLS1 < l]
-    diff_features = list(num.index.values)
-    diff_features += list(denom.index.values)
+        pls_df = pd.DataFrame(rfc.x_weights_,
+                              index=ctable.columns, columns=['PLS1'])
+        l, r = round_balance(pls_df.values,
+                             means_init=[[pls_df.PLS1.min()],
+                                         [0],
+                                         [pls_df.PLS1.max()]],
+                             n_init=100)
+        num = pls_df.loc[pls_df.PLS1 > r]
+        denom = pls_df.loc[pls_df.PLS1 < l]
+        nums = nums & set(num.index)
+        denoms = denoms & set(denom.index)
+
+    diff_features = list(nums) + list(denoms)
 
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
@@ -155,14 +162,14 @@ def mann_whitney_cmd(table_file, metadata_file, category, output_file):
 @click.option('--output-file',
               help='output file of differientially abundance features.')
 def lefse_cmd(table_file, metadata_file, category, output_file):
-    fdir = tempfile.mkdtemp() 
+    fdir = tempfile.mkdtemp()
     pickle_file = '%s/tmp.pickle' % fdir
     tsv_file = '%s/tmp.txt' % fdir
     md_file = '%s/tmp.md.txt' % fdir
     lefse_file = '%s/tmp.lefse.txt' % fdir
 
     md = pd.read_table(metadata_file, index_col=0)
-    md.to_csv(md_file, sep='\t', index_label='#SampleID')    
+    md.to_csv(md_file, sep='\t', index_label='#SampleID')
 
     table = load_table(table_file)
     table = pd.DataFrame(np.array(table.matrix_data.todense()),
@@ -172,7 +179,7 @@ def lefse_cmd(table_file, metadata_file, category, output_file):
 
     # add some garbage taxonomy column to make lefse happy
     table['Consensus Lineage'] = ['meh;blah'] * len(table.index)
-    
+
     output = io.StringIO()
     output.write('# Constructed from biom file\n')
     table.to_csv(output, sep='\t', index_label='#OTU ID')
@@ -203,7 +210,7 @@ def lefse_cmd(table_file, metadata_file, category, output_file):
     format_proc = Popen(format_cmd, shell=True)
     format_proc.wait()
     lefse_proc = Popen(lefse_cmd, shell=True)
-    lefse_proc.wait()        
+    lefse_proc.wait()
     res = pd.read_table(lefse_file, index_col=0, header=None)
     idx = res.iloc[:, 0] > 2
     diff_features = list(res.loc[res.iloc[:, 0] > 2].index)
@@ -280,7 +287,7 @@ def lasso_cmd(table_file, metadata_file, category, output_file):
                          index=table.ids(axis='sample'),
                          columns=table.ids(axis='observation'))
     cl = linear_model.LassoCV()
-    
+
     cl.fit(X=table, y=metadata[category])
     idx = np.abs(cl.coef_) > 0
     diff_features = table.columns[idx]
