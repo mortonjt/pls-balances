@@ -39,6 +39,7 @@ def pls_balances_cmd(table_file, metadata_file, category, output_file):
 
     bootstraps = 100
     ls, rs, fs = [], [], []
+    scores = pd.Series([0] * len(table.columns), table.columns)
     nums, denoms = set(table.columns), set(table.columns)
     for _ in range(bootstraps):
         _table = table.apply(lambda x: dirichlet.rvs(x+1).ravel(), axis=1)
@@ -64,7 +65,11 @@ def pls_balances_cmd(table_file, metadata_file, category, output_file):
         nums = nums & set(num.index)
         denoms = denoms & set(denom.index)
 
-    diff_features = list(nums) + list(denoms)
+    N = bootstraps
+    alpha = 0.05
+    m = len(table.columns)
+    p = scores / bootstraps
+    diff_features = scores.loc[p > np.power(alpha / m, 1/N)]
 
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
