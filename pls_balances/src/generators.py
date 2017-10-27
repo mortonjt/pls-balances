@@ -272,15 +272,28 @@ def generate_balanced_block_table(reps, n_species_class1, n_species_class2,
         # randomly shuffle template
         template = np.random.permutation(template)
 
+        # pad with zeros to make sure that the template is large enough
+        if len(template) < n_species:
+            z = np.zeros(n_species - len(template))
+            template = np.concatenate((template, z))
+        else:
+            template = template[:n_species]
+
+        # add pseudocount to give remaining entries a non-zero probability of
+        # being observed
+        template = template + 1
+
         for _ in range(reps):
             data.append(template[:(n_species)])
             metadata += [0]
 
         for _ in range(reps):
             data.append(
-                np.concatenate(((1/effect_size)*template[:(n_species_class1)],
-                                template[(n_species_class1):(n_species_class2+n_species_shared)],
-                                effect_size*template[(n_species-n_species_class2):n_species]), axis=0))
+                np.concatenate(
+                    ((1/effect_size)*template[:(n_species_class1)],
+                     template[(n_species_class1):(n_species_class2+n_species_shared)],
+                     effect_size*template[(n_species-n_species_class2):n_species]),
+                    axis=0))
             metadata += [1]
 
     data = closure(np.vstack(data))
