@@ -41,12 +41,12 @@ def round_balance(spectrum, **init_kwds):
     rsol = solve(w[mid], w[r], m[mid], m[r], std[mid], std[r])
     lsol = lsol[np.argmin(np.abs(lsol))]
     rsol = rsol[np.argmin(np.abs(rsol))]
-    if lsol>rsol:
-        rsol, lsol = lsol, rsol
     if lsol > 0:
         lsol = -lsol
     if rsol < 0:
         rsol = -rsol
+    if lsol>rsol:
+        rsol, lsol = lsol, rsol
     return lsol, rsol
 
 def balance_classify(table, cats, num_folds, **init_kwds):

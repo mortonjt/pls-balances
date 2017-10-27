@@ -37,14 +37,13 @@ def pls_balances_cmd(table_file, metadata_file, category, output_file):
                          index=table.ids(axis='sample'),
                          columns=table.ids(axis='observation'))
 
-
     bootstraps = 100
     ls, rs, fs = [], [], []
     nums, denoms = set(table.columns), set(table.columns)
     for _ in range(bootstraps):
         _table = table.apply(lambda x: dirichlet.rvs(x+1).ravel(), axis=1)
 
-        ctable = pd.DataFrame(clr(centralize(table+1)),
+        ctable = pd.DataFrame(clr(centralize(_table)),
                               index=table.index, columns=table.columns)
 
         rfc = PLSRegression(n_components=1)
