@@ -65,11 +65,7 @@ def pls_balances_cmd(table_file, metadata_file, category, output_file):
         nums = nums & set(num.index)
         denoms = denoms & set(denom.index)
 
-    N = bootstraps
-    alpha = 0.05
-    m = len(table.columns)
-    p = scores / bootstraps
-    diff_features = scores.loc[p > np.power(alpha / m, 1/N)]
+    diff_features = scores.loc[scores > 10]
 
     with open(output_file, 'w') as f:
         f.write(','.join(diff_features))
